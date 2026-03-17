@@ -505,11 +505,11 @@
 
 <!-- TITLE SCREEN -->
 <div id="titleScreen" class="screen active">
-  <div class="title-logo">Страны, Армии, Мир!</div>
+  <div class="title-logo">Страны, Армии, Мир</div>
   <div class="title-sub">Игра для творцов будущего</div>
   <button class="btn-primary" onclick="showSelect()">Одиночная игра</button>
   <button class="btn-secondary" onclick="showMultiplayer()" style="margin-top:0.8rem">Мультиплеер</button>
-  <p style="margin-top:1.5rem;color:var(--text-dim);font-size:0.85rem;font-style:italic">© Самир Бектемір, Quantum STEM School, 2026</p>
+  <p style="margin-top:1.5rem;color:var(--text-dim);font-size:0.85rem;font-style:italic">© Самир Бектемір, Quantum STEM School</p>
 </div>
 
 
@@ -1749,6 +1749,7 @@ async function mpJoinRoom() {
   document.getElementById('roomCodeDisplay').textContent = MP.roomId;
   document.getElementById('lobbyCreate').style.display = 'none';
   document.getElementById('lobbyRoom').style.display   = 'block';
+  document.getElementById('lobbyWaitMsg').style.display = 'none';
 
   mpWatchLobby();
 }
@@ -1775,7 +1776,10 @@ async function mpPickCountry(id) {
 }
 
 function mpWatchLobby() {
+  // Immediately show country picker for all players
   mpBuildCountryPicker([]);
+  document.getElementById('lobbyWaitMsg').style.display = 'none';
+
   window._fbOn(`rooms/${MP.roomId}`, (room) => {
     if (!room) return;
     const players = room.players || {};
