@@ -547,6 +547,7 @@
     <div class="select-sub">Каждая страна имеет свои сильные и слабые стороны. Выбирай мудро!</div>
     <div class="countries-grid" id="countriesGrid"></div>
     <div style="text-align:center">
+      <div id="selectMpNote" style="display:none;color:var(--gold);font-size:0.9rem;margin-bottom:0.8rem;text-align:center"></div>
       <button class="btn-primary" id="startBtn" onclick="startGame()" style="opacity:0.4;pointer-events:none">Начать игру</button>
     </div>
   </div>
@@ -820,6 +821,8 @@ function buildCountryGrid() {
 }
 
 function selectCountry(id) {
+  // In multiplayer, block already-taken countries
+  if (MP.mode === 'multi' && MP.takenCountries && MP.takenCountries.includes(id)) return;
   selectedCountryId = id;
   document.querySelectorAll('.country-card').forEach(el => el.classList.remove('selected'));
   document.getElementById('cc_' + id).classList.add('selected');
@@ -1757,35 +1760,110 @@ function mpWatchLobby() {
       </div>`
     ).join('');
 
-    // If game started, join game
+    // Host clicked start — go to country select
+    if (room.status === 'selecting' && !MP.isHost && MP.mode !== 'multi') {
+      MP.mode = 'multi';
+      MP.takenCountries = [];
+      mpShowCountrySelect();
+    }
+    // Game launched — load state
     if (room.status === 'playing' && room.gameState) {
       const players = room.players || {};
-      MP.myIdx = players[MP.myUid]?.countryIdx ?? 0;
+      // Find my index
+      Object.entries(players).forEach(([uid], i) => {
+        if (uid === MP.myUid) MP.myIdx = i;
+      });
       mpLoadState(room.gameState);
-      switchScreen('selectScreen'); // country already chosen, skip to game
     }
   });
 }
 
 async function mpStartGame() {
+  // Signal all players to go to country select
+  await window._fbSet(`rooms/${MP.roomId}/status`, 'selecting');
+  MP.mode = 'multi';
+  MP.takenCountries = [];
+  mpShowCountrySelect();
+}
+
+function mpShowCountrySelect() {
+  const note = document.getElementById('selectMpNote');
+  if (note) { note.style.display='block'; note.textContent = 'Мультиплеер: выбери страну'; }
+  document.getElementById('startBtn').textContent = 'Выбрать';
+  document.getElementById('startBtn').onclick = mpConfirmCountry;
+  switchScreen('selectScreen');
+  // Watch for taken countries
+  window._fbOn(`rooms/${MP.roomId}/players`, (players) => {
+    if (!players) return;
+    MP.takenCountries = Object.entries(players)
+      .filter(([uid, p]) => uid !== MP.myUid && p.countryId)
+      .map(([_, p]) => p.countryId);
+    // Grey out taken cards
+    document.querySelectorAll('.country-card').forEach(el => {
+      const id = el.id.replace('cc_','');
+      if (MP.takenCountries.includes(id)) {
+        el.style.opacity = '0.3';
+        el.style.pointerEvents = 'none';
+      } else {
+        el.style.opacity = '1';
+        el.style.pointerEvents = 'auto';
+      }
+    });
+    // Check if all players chose
+    const allChosen = Object.values(players).every(p => p.countryId);
+    if (allChosen && MP.isHost) mpLaunchGame(players);
+  });
+}
+
+async function mpConfirmCountry() {
+  if (!selectedCountryId) return;
+  await window._fbUpd(`rooms/${MP.roomId}/players/${MP.myUid}`, { countryId: selectedCountryId });
+  document.getElementById('startBtn').disabled = true;
+  document.getElementById('startBtn').textContent = 'Ожидание других игроков…';
+}
+
+async function mpLaunchGame(players) {
   const snap = await window._fbGet(`rooms/${MP.roomId}`);
   if (!snap || !snap.exists()) return;
   const room = snap.val();
-  const players = Object.entries(room.players || {});
+  const playerList = Object.entries(room.players || {});
+  
+  // Build countries array: human players first, then AI fill to 6
+  const humanCountries = playerList.map(([uid, p], i) => {
+    const c = COUNTRIES.find(cc => cc.id === p.countryId) || COUNTRIES[i];
+    return { ...c, R:c.R,S:c.S,H:c.H,A:c.A,E:c.E,
+      startR:c.R,startS:c.S,startH:c.H,startA:c.A,startE:c.E,
+      usedProjects:[], failedProjects:[], isPlayer:false,
+      humanUid: uid };
+  });
+  const usedIds = humanCountries.map(c => c.id);
+  const aiCountries = shuffle(COUNTRIES.filter(c => !usedIds.includes(c.id)))
+    .slice(0, Math.max(0, 6 - humanCountries.length))
+    .map(c => ({ ...c, R:c.R,S:c.S,H:c.H,A:c.A,E:c.E,
+      startR:c.R,startS:c.S,startH:c.H,startA:c.A,startE:c.E,
+      usedProjects:[], failedProjects:[], isPlayer:false }));
 
-  // Assign country indices: host gets 0, others get 1..N
-  const humanCount = players.length;
-  const updates = {};
-  players.forEach(([uid, p], i) => {
-    updates[`rooms/${MP.roomId}/players/${uid}/countryIdx`] = i;
+  const allCountries = [...humanCountries, ...aiCountries];
+
+  // Set each human's index
+  playerList.forEach(([uid], i) => {
     if (uid === MP.myUid) MP.myIdx = i;
   });
-  await Promise.all(Object.entries(updates).map(([path, val]) => window._fbSet(path, val)));
+  allCountries[MP.myIdx].isPlayer = true;
 
-  // Show country select for host — others will be assigned countries by host
-  // For simplicity: host picks first, assigns remaining by join order
-  // Country select will work normally; after host picks, game initializes
-  switchScreen('selectScreen');
+  G.countries = allCountries;
+  G.playerIdx = MP.myIdx;
+  G.round = 1;
+  G.phase = 'draw';
+  G.noWar = false;
+  G.playerActed = false;
+  G.playerDeveloped = false;
+  G.currentHumanTurn = 0;
+  G.eventDeck = shuffle([...Array(32).keys()]);
+
+  const state = mpSerialize();
+  await window._fbSet(`rooms/${MP.roomId}/gameState`, state);
+  await window._fbSet(`rooms/${MP.roomId}/status`, 'playing');
 }
 
 // Called after game starts in multiplayer mode — sync state to Firebase
