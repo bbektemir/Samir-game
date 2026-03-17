@@ -509,7 +509,7 @@
   <div class="title-sub">Игра для творцов будущего</div>
   <button class="btn-primary" onclick="showSelect()">Одиночная игра</button>
   <button class="btn-secondary" onclick="showMultiplayer()" style="margin-top:0.8rem">Мультиплеер</button>
-  <p style="margin-top:1.5rem;color:var(--text-dim);font-size:0.85rem;font-style:italic">© Самир Бектемір, Quantum STEM School, 2026</p>
+  <p style="margin-top:1.5rem;color:var(--text-dim);font-size:0.85rem;font-style:italic">© Самир Бектемір, Quantum STEM School</p>
 </div>
 
 
@@ -1928,6 +1928,7 @@ function mpSerialize() {
       usedProjects: c.usedProjects,
       failedProjects: c.failedProjects || [],
       isPlayer: c.isPlayer,
+      humanUid: c.humanUid || null,
       log: c.log || [],
     }))
   };
@@ -1952,10 +1953,15 @@ function mpLoadState(state) {
   G.playerDeveloped = state.playerDeveloped;
   G.eventDeck      = state.eventDeck;
   G.currentHumanTurn = state.currentHumanTurn || 0;
-  G.countries      = state.countries.map((c, i) => ({
+  // Find my index by UID stored in country
+  state.countries.forEach((c, i) => {
+    if (c.humanUid === MP.myUid) MP.myIdx = i;
+  });
+  G.playerIdx = MP.myIdx;
+  G.countries = state.countries.map((c, i) => ({
     ...COUNTRIES.find(cc => cc.id === c.id),
     ...c,
-    isPlayer: i === MP.myIdx,
+    isPlayer: c.humanUid === MP.myUid,
   }));
   if (state.currentEvent) {
     G.currentEvent = EVENTS.find(e => e.name === state.currentEvent.name) || null;
