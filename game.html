@@ -500,8 +500,6 @@
 </style>
 
 <!-- Firebase SDK (compat — synchronous global access) -->
-<script src="https://unpkg.com/firebase@9.22.0/compat/app.js"></script>
-<script src="https://unpkg.com/firebase@9.22.0/compat/database.js"></script>
 </head>
 <body>
 
@@ -1654,11 +1652,45 @@ function showMultiplayer() {
   switchScreen('lobbyScreen');
 }
 
-async function mpCreateRoom() {
-  if (!window._fbReady || !window._fbSet) {
-    alert('Firebase не загрузился. Проверь интернет-соединение и обнови страницу.');
-    return;
+function fbLoadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+async function fbInit() {
+  if (window._fbReady) return true;
+  try {
+    await fbLoadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js');
+    await fbLoadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js');
+    firebase.initializeApp({
+      apiKey:            "AIzaSyD5XfEmCH1k66knsEECU0yiygiNyc15Fuw",
+      authDomain:        "samir-game-2ef2b.firebaseapp.com",
+      databaseURL:       "https://samir-game-2ef2b-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId:         "samir-game-2ef2b",
+      storageBucket:     "samir-game-2ef2b.firebasestorage.app",
+      messagingSenderId: "381006167960",
+      appId:             "1:381006167960:web:2519d94b5ea3376ea7b5ed"
+    });
+    var _db = firebase.database();
+    window._fbSet  = function(path, val) { return _db.ref(path).set(val); };
+    window._fbGet  = function(path) { return _db.ref(path).get(); };
+    window._fbOn   = function(path, cb) { _db.ref(path).on('value', function(snap){ cb(snap.val()); }); };
+    window._fbUpd  = function(path, val) { return _db.ref(path).update(val); };
+    window._fbReady = true;
+    return true;
+  } catch(e) {
+    alert('Не удалось загрузить Firebase: ' + e.message);
+    return false;
   }
+}
+
+async function mpCreateRoom() {
+  if (!await fbInit()) return;
   const name = document.getElementById('playerNameInput').value.trim() || 'Игрок 1';
   MP.myName = name;
   MP.myUid  = mpUid();
@@ -1685,6 +1717,7 @@ async function mpCreateRoom() {
 }
 
 async function mpJoinRoom() {
+  if (!await fbInit()) return;
   const name = document.getElementById('playerNameInput').value.trim() || 'Гость';
   const code = document.getElementById('joinCodeInput').value.trim().toUpperCase();
   if (!code) { alert('Введи код комнаты'); return; }
@@ -1836,23 +1869,5 @@ function shuffle(arr) {
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 </script>
 
-<script>
-  var _fbConfig = {
-    apiKey:            "AIzaSyD5XfEmCH1k66knsEECU0yiygiNyc15Fuw",
-    authDomain:        "samir-game-2ef2b.firebaseapp.com",
-    databaseURL:       "https://samir-game-2ef2b-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId:         "samir-game-2ef2b",
-    storageBucket:     "samir-game-2ef2b.firebasestorage.app",
-    messagingSenderId: "381006167960",
-    appId:             "1:381006167960:web:2519d94b5ea3376ea7b5ed"
-  };
-  firebase.initializeApp(_fbConfig);
-  var _db = firebase.database();
-  window._fbSet  = function(path, val) { return _db.ref(path).set(val); };
-  window._fbGet  = function(path) { return _db.ref(path).get(); };
-  window._fbOn   = function(path, cb) { _db.ref(path).on('value', function(snap){ cb(snap.val()); }); };
-  window._fbUpd  = function(path, val) { return _db.ref(path).update(val); };
-  window._fbReady = true;
-</script>
 </body>
 </html>
