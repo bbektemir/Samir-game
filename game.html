@@ -1655,17 +1655,26 @@ function showMultiplayer() {
 }
 
 async function mpCreateRoom() {
+  if (!window._fbReady || !window._fbSet) {
+    alert('Firebase не загрузился. Проверь интернет-соединение и обнови страницу.');
+    return;
+  }
   const name = document.getElementById('playerNameInput').value.trim() || 'Игрок 1';
   MP.myName = name;
   MP.myUid  = mpUid();
   MP.isHost = true;
   MP.roomId = mpRoomCode();
 
-  await window._fbSet(`rooms/${MP.roomId}`, {
-    status:  'lobby',
-    host:    MP.myUid,
-    players: { [MP.myUid]: { name, ready: false, countryIdx: null } }
-  });
+  try {
+    await window._fbSet(`rooms/${MP.roomId}`, {
+      status:  'lobby',
+      host:    MP.myUid,
+      players: { [MP.myUid]: { name, ready: false, countryIdx: null } }
+    });
+  } catch(e) {
+    alert('Ошибка подключения к базе данных: ' + e.message);
+    return;
+  }
 
   document.getElementById('roomCodeDisplay').textContent = MP.roomId;
   document.getElementById('lobbyCreate').style.display = 'none';
