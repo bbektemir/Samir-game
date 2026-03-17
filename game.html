@@ -530,8 +530,15 @@
 
     <div id="lobbyRoom" style="display:none">
       <div style="font-size:0.85rem;color:var(--text-dim);margin-bottom:0.4rem">Код комнаты</div>
-      <div id="roomCodeDisplay" style="font-size:2.5rem;font-family:monospace;color:var(--gold);letter-spacing:0.3em;margin-bottom:1.5rem"></div>
-      <div id="lobbyPlayerList" style="margin-bottom:1.5rem;text-align:left"></div>
+      <div id="roomCodeDisplay" style="font-size:2.5rem;font-family:monospace;color:var(--gold);letter-spacing:0.3em;margin-bottom:1rem"></div>
+
+      <div style="margin-bottom:1rem">
+        <div style="font-size:0.8rem;color:var(--text-dim);margin-bottom:0.5rem">Выбери свою страну:</div>
+        <div id="lobbyCountryPicker" style="display:flex;flex-wrap:wrap;gap:0.4rem;max-height:180px;overflow-y:auto"></div>
+        <div id="lobbyMyChoice" style="margin-top:0.5rem;font-size:0.85rem;color:var(--gold)"></div>
+      </div>
+
+      <div id="lobbyPlayerList" style="margin-bottom:1rem;text-align:left"></div>
       <button class="btn-primary" id="lobbyStartBtn" onclick="mpStartGame()" style="width:100%;display:none">Начать игру</button>
       <div id="lobbyWaitMsg" style="color:var(--text-dim);font-size:0.85rem">Ожидание игроков…</div>
     </div>
@@ -1746,30 +1753,61 @@ async function mpJoinRoom() {
   mpWatchLobby();
 }
 
+function mpBuildCountryPicker(takenByOthers) {
+  const picker = document.getElementById('lobbyCountryPicker');
+  if (!picker) return;
+  picker.innerHTML = COUNTRIES.map(c => {
+    const taken = takenByOthers.includes(c.id);
+    const mine  = MP.myCountryId === c.id;
+    return `<button onclick="mpPickCountry('${c.id}')"
+      style="padding:0.3rem 0.6rem;border-radius:4px;border:1px solid ${mine?'var(--gold)':taken?'#444':'var(--border)'};
+      background:${mine?'rgba(201,168,76,0.2)':'transparent'};color:${taken?'#555':'var(--text)'};
+      cursor:${taken?'default':'pointer'};font-size:0.85rem;pointer-events:${taken?'none':'auto'}">
+      ${c.flag} ${c.name}
+    </button>`;
+  }).join('');
+}
+
+async function mpPickCountry(id) {
+  MP.myCountryId = id;
+  document.getElementById('lobbyMyChoice').textContent = 'Выбрано: ' + COUNTRIES.find(c=>c.id===id).flag + ' ' + COUNTRIES.find(c=>c.id===id).name;
+  await window._fbUpd(`rooms/${MP.roomId}/players/${MP.myUid}`, { countryId: id });
+}
+
 function mpWatchLobby() {
+  mpBuildCountryPicker([]);
   window._fbOn(`rooms/${MP.roomId}`, (room) => {
     if (!room) return;
-
-    // Update player list
     const players = room.players || {};
-    const list = document.getElementById('lobbyPlayerList');
-    list.innerHTML = Object.entries(players).map(([uid, p]) =>
-      `<div style="padding:0.4rem 0;border-bottom:1px solid var(--border);color:${uid===MP.myUid?'var(--gold)':'var(--text)'}">
-        ${uid === room.host ? '👑 ' : ''}${p.name}
-        ${p.countryIdx !== null ? ' — ' + COUNTRIES[p.countryIdx].flag + ' ' + COUNTRIES[p.countryIdx].name : ''}
-      </div>`
-    ).join('');
 
-    // Host clicked start — go to country select
-    if (room.status === 'selecting' && !MP.isHost && MP.mode !== 'multi') {
-      MP.mode = 'multi';
-      MP.takenCountries = [];
-      mpShowCountrySelect();
+    // Taken countries by others
+    const takenByOthers = Object.entries(players)
+      .filter(([uid, p]) => uid !== MP.myUid && p.countryId)
+      .map(([_, p]) => p.countryId);
+    mpBuildCountryPicker(takenByOthers);
+
+    // Player list
+    const list = document.getElementById('lobbyPlayerList');
+    list.innerHTML = Object.entries(players).map(([uid, p]) => {
+      const country = p.countryId ? COUNTRIES.find(c=>c.id===p.countryId) : null;
+      return `<div style="padding:0.4rem 0;border-bottom:1px solid var(--border);color:${uid===MP.myUid?'var(--gold)':'var(--text)'}">
+        ${uid === room.host ? '👑 ' : ''}${p.name}
+        ${country ? ' — ' + country.flag + ' ' + country.name : ' — не выбрал'}
+      </div>`;
+    }).join('');
+
+    // Show start button only for host when everyone chose
+    if (MP.isHost) {
+      const allChosen = Object.values(players).every(p => p.countryId);
+      const btn = document.getElementById('lobbyStartBtn');
+      btn.style.display = 'block';
+      btn.style.opacity = allChosen ? '1' : '0.4';
+      btn.style.pointerEvents = allChosen ? 'auto' : 'none';
+      btn.textContent = allChosen ? 'Начать игру' : 'Ждём выбора стран…';
     }
+
     // Game launched — load state
     if (room.status === 'playing' && room.gameState) {
-      const players = room.players || {};
-      // Find my index
       Object.entries(players).forEach(([uid], i) => {
         if (uid === MP.myUid) MP.myIdx = i;
       });
@@ -1779,62 +1817,17 @@ function mpWatchLobby() {
 }
 
 async function mpStartGame() {
-  // Signal all players to go to country select
-  await window._fbSet(`rooms/${MP.roomId}/status`, 'selecting');
-  MP.mode = 'multi';
-  MP.takenCountries = [];
-  mpShowCountrySelect();
-}
-
-function mpShowCountrySelect() {
-  const note = document.getElementById('selectMpNote');
-  if (note) { note.style.display='block'; note.textContent = 'Мультиплеер: выбери страну'; }
-  document.getElementById('startBtn').textContent = 'Выбрать';
-  document.getElementById('startBtn').onclick = mpConfirmCountry;
-  switchScreen('selectScreen');
-  // Watch for taken countries
-  window._fbOn(`rooms/${MP.roomId}/players`, (players) => {
-    if (!players) return;
-    MP.takenCountries = Object.entries(players)
-      .filter(([uid, p]) => uid !== MP.myUid && p.countryId)
-      .map(([_, p]) => p.countryId);
-    // Grey out taken cards
-    document.querySelectorAll('.country-card').forEach(el => {
-      const id = el.id.replace('cc_','');
-      if (MP.takenCountries.includes(id)) {
-        el.style.opacity = '0.3';
-        el.style.pointerEvents = 'none';
-      } else {
-        el.style.opacity = '1';
-        el.style.pointerEvents = 'auto';
-      }
-    });
-    // Check if all players chose
-    const allChosen = Object.values(players).every(p => p.countryId);
-    if (allChosen && MP.isHost) mpLaunchGame(players);
-  });
-}
-
-async function mpConfirmCountry() {
-  if (!selectedCountryId) return;
-  await window._fbUpd(`rooms/${MP.roomId}/players/${MP.myUid}`, { countryId: selectedCountryId });
-  document.getElementById('startBtn').disabled = true;
-  document.getElementById('startBtn').textContent = 'Ожидание других игроков…';
-}
-
-async function mpLaunchGame(players) {
   const snap = await window._fbGet(`rooms/${MP.roomId}`);
   if (!snap || !snap.exists()) return;
   const room = snap.val();
   const playerList = Object.entries(room.players || {});
-  
-  // Build countries array: human players first, then AI fill to 6
-  const humanCountries = playerList.map(([uid, p], i) => {
-    const c = COUNTRIES.find(cc => cc.id === p.countryId) || COUNTRIES[i];
+
+  // Build countries: humans first, then AI to fill to 6
+  const humanCountries = playerList.map(([uid, p]) => {
+    const c = COUNTRIES.find(cc => cc.id === p.countryId);
     return { ...c, R:c.R,S:c.S,H:c.H,A:c.A,E:c.E,
       startR:c.R,startS:c.S,startH:c.H,startA:c.A,startE:c.E,
-      usedProjects:[], failedProjects:[], isPlayer:false,
-      humanUid: uid };
+      usedProjects:[], failedProjects:[], isPlayer:false, humanUid:uid };
   });
   const usedIds = humanCountries.map(c => c.id);
   const aiCountries = shuffle(COUNTRIES.filter(c => !usedIds.includes(c.id)))
@@ -1851,6 +1844,7 @@ async function mpLaunchGame(players) {
   });
   allCountries[MP.myIdx].isPlayer = true;
 
+  MP.mode = 'multi';
   G.countries = allCountries;
   G.playerIdx = MP.myIdx;
   G.round = 1;
