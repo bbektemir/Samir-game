@@ -509,7 +509,7 @@
   <div class="title-sub">Игра для творцов будущего</div>
   <button class="btn-primary" onclick="showSelect()">Одиночная игра</button>
   <button class="btn-secondary" onclick="showMultiplayer()" style="margin-top:0.8rem">Мультиплеер</button>
-  <p style="margin-top:1.5rem;color:var(--text-dim);font-size:0.85rem;font-style:italic">© Самир Бектемір, Quantum STEM School</p>
+  <p style="margin-top:1.5rem;color:var(--text-dim);font-size:0.85rem;font-style:italic">© Самир Бектемір, Quantum STEM School, 2026</p>
 </div>
 
 
@@ -950,7 +950,7 @@ function setPhase(phase) {
 
   if (phase === 'draw') {
     phaseEl.textContent = 'Открой карточку события';
-    drawBtn.disabled = false;
+    drawBtn.disabled = (MP.mode === 'multi' && !MP.isHost);
     document.getElementById('turnBadge').textContent = 'Раунд ' + G.round;
   } else if (phase === 'player') {
     const myTurn = mpIsMyTurn();
@@ -981,7 +981,7 @@ function setPhase(phase) {
   }
 }
 
-function nextRound() {
+async function nextRound() {
   G.round++;
   G.playerActed = false;
   G.playerDeveloped = false;
@@ -1000,7 +1000,7 @@ function nextRound() {
 
 // ─── EVENT ───────────────────────────────────────────────────────────────────
 
-function drawEvent() {
+async function drawEvent() {
   if (G.eventDeck.length === 0) G.eventDeck = shuffle([...Array(EVENTS.length).keys()]);
   const idx = G.eventDeck.pop();
   const ev = EVENTS[idx];
@@ -1435,10 +1435,41 @@ window.launchProject = function(idx) {
   renderGame();
 };
 
-function playerPass() {
+async function playerPass() {
   G.playerActed = true;
-  addLog('⏭️ Ты пропустил действие');
-  setPhase('ai');
+  addLog('⏭️ Ты закончил ход');
+
+  if (MP.mode !== 'multi') {
+    setPhase('ai');
+    return;
+  }
+
+  // Multiplayer: mark my turn as done in Firebase
+  await window._fbUpd(`rooms/${MP.roomId}/done`, { [MP.myUid]: true });
+
+  // Disable all action buttons while waiting
+  ['drawEventBtn','devBtn','warBtn','projBtn','passBtn'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = true;
+  });
+  document.getElementById('phaseInfo').textContent = 'Ожидание других игроков…';
+
+  // Sync my country state
+  await mpPushState();
+
+  // Host checks if all humans are done
+  if (MP.isHost) {
+    const snap = await window._fbGet(`rooms/${MP.roomId}`);
+    if (!snap || !snap.exists()) return;
+    const room = snap.val();
+    const players = Object.keys(room.players || {});
+    const done = Object.keys(room.done || {});
+    if (players.every(uid => done.includes(uid))) {
+      // All done — run AI and sync
+      await window._fbSet(`rooms/${MP.roomId}/done`, null);
+      setPhase('ai');
+    }
+  }
 }
 
 // After player done with action, still let them develop if not done
@@ -1771,18 +1802,26 @@ function mpBuildCountryPicker(takenByOthers) {
 
 async function mpPickCountry(id) {
   MP.myCountryId = id;
-  document.getElementById('lobbyMyChoice').textContent = 'Выбрано: ' + COUNTRIES.find(c=>c.id===id).flag + ' ' + COUNTRIES.find(c=>c.id===id).name;
+  const chosen = COUNTRIES.find(c=>c.id===id);
+  if (chosen) document.getElementById('lobbyMyChoice').textContent = 'Выбрано: ' + chosen.flag + ' ' + chosen.name;
   await window._fbUpd(`rooms/${MP.roomId}/players/${MP.myUid}`, { countryId: id });
 }
 
 function mpWatchLobby() {
-  // Immediately show country picker for all players
-  mpBuildCountryPicker([]);
-  document.getElementById('lobbyWaitMsg').style.display = 'none';
+  // Force show picker and hide wait message immediately
+  setTimeout(() => {
+    document.getElementById('lobbyWaitMsg').style.display = 'none';
+    document.getElementById('lobbyCountryPicker').style.display = 'flex';
+    mpBuildCountryPicker([]);
+  }, 100);
 
   window._fbOn(`rooms/${MP.roomId}`, (room) => {
     if (!room) return;
     const players = room.players || {};
+
+    // Always hide wait message and show picker
+    document.getElementById('lobbyWaitMsg').style.display = 'none';
+    document.getElementById('lobbyCountryPicker').style.display = 'flex';
 
     // Taken countries by others
     const takenByOthers = Object.entries(players)
@@ -1792,22 +1831,24 @@ function mpWatchLobby() {
 
     // Player list
     const list = document.getElementById('lobbyPlayerList');
-    list.innerHTML = Object.entries(players).map(([uid, p]) => {
-      const country = p.countryId ? COUNTRIES.find(c=>c.id===p.countryId) : null;
+    if (list) list.innerHTML = Object.entries(players).map(([uid, p]) => {
+      const country = p.countryId ? (COUNTRIES.find(c=>c.id===p.countryId) || null) : null;
       return `<div style="padding:0.4rem 0;border-bottom:1px solid var(--border);color:${uid===MP.myUid?'var(--gold)':'var(--text)'}">
         ${uid === room.host ? '👑 ' : ''}${p.name}
         ${country ? ' — ' + country.flag + ' ' + country.name : ' — не выбрал'}
       </div>`;
     }).join('');
 
-    // Show start button only for host when everyone chose
+    // Start button for host
     if (MP.isHost) {
       const allChosen = Object.values(players).every(p => p.countryId);
       const btn = document.getElementById('lobbyStartBtn');
-      btn.style.display = 'block';
-      btn.style.opacity = allChosen ? '1' : '0.4';
-      btn.style.pointerEvents = allChosen ? 'auto' : 'none';
-      btn.textContent = allChosen ? 'Начать игру' : 'Ждём выбора стран…';
+      if (btn) {
+        btn.style.display = 'block';
+        btn.style.opacity = allChosen ? '1' : '0.4';
+        btn.style.pointerEvents = allChosen ? 'auto' : 'none';
+        btn.textContent = allChosen ? 'Начать игру' : 'Ждём выбора стран…';
+      }
     }
 
     // Game launched — load state
@@ -1828,7 +1869,7 @@ async function mpStartGame() {
 
   // Build countries: humans first, then AI to fill to 6
   const humanCountries = playerList.map(([uid, p]) => {
-    const c = COUNTRIES.find(cc => cc.id === p.countryId);
+    const c = COUNTRIES.find(cc => cc.id === p.countryId) || COUNTRIES[0];
     return { ...c, R:c.R,S:c.S,H:c.H,A:c.A,E:c.E,
       startR:c.R,startS:c.S,startH:c.H,startA:c.A,startE:c.E,
       usedProjects:[], failedProjects:[], isPlayer:false, humanUid:uid };
@@ -1892,6 +1933,17 @@ function mpSerialize() {
   };
 }
 
+function mpWatchGame() {
+  if (MP.mode !== 'multi') return;
+  window._fbOn(`rooms/${MP.roomId}/gameState`, (state) => {
+    if (!state) return;
+    // Don't reload if it's our own push or we're in AI phase (host drives)
+    if (MP.isHost) return;
+    mpLoadState(state);
+  });
+  // Non-host: watch done list — when cleared, it means AI ran, new state incoming
+}
+
 function mpLoadState(state) {
   G.round          = state.round;
   G.phase          = state.phase;
@@ -1910,6 +1962,7 @@ function mpLoadState(state) {
   }
   renderGame();
   switchScreen('gameScreen');
+  mpWatchGame();
 }
 
 // Is it currently my turn to act?
@@ -1919,15 +1972,6 @@ function mpIsMyTurn() {
 }
 
 // Watch for remote state updates (non-host players)
-function mpWatchGame() {
-  if (MP.mode !== 'multi') return;
-  window._fbOn(`rooms/${MP.roomId}/gameState`, (state) => {
-    if (!state) return;
-    // Don't overwrite if we just pushed (host drives)
-    if (!MP.isHost) mpLoadState(state);
-  });
-}
-
 function switchScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
