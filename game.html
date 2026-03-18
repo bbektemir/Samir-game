@@ -509,7 +509,7 @@
   <div class="title-sub">Игра для творцов будущего</div>
   <button class="btn-primary" onclick="showSelect()">Одиночная игра</button>
   <button class="btn-secondary" onclick="showMultiplayer()" style="margin-top:0.8rem">Мультиплеер</button>
-  <p style="margin-top:1.5rem;color:var(--text-dim);font-size:0.85rem;font-style:italic">© Самир Бектемір, Quantum STEM School, 2026</p>
+  <p style="margin-top:1.5rem;color:var(--text-dim);font-size:0.85rem;font-style:italic">© Самир Бектемір, 2026</p>
 </div>
 
 
@@ -590,6 +590,7 @@
         <button class="btn-primary" id="drawEventBtn" onclick="drawEvent()" style="width:100%;margin-top:0.8rem">
           Открыть событие
         </button>
+        <div id="mpWaitBanner" style="display:none;text-align:center;padding:0.6rem;color:var(--text-dim);font-size:0.85rem;margin-top:0.5rem"></div>
       </div>
 
       <!-- Actions -->
@@ -609,8 +610,8 @@
             <span>Смелый проект</span>
           </button>
           <button class="action-btn" id="passBtn" onclick="playerPass()" disabled>
-            <span class="action-icon">⏭️</span>
-            <span>Пропустить ход</span>
+            <span class="action-icon">▶️</span>
+            <span>Дальше</span>
           </button>
         </div>
       </div>
@@ -948,26 +949,41 @@ function setPhase(phase) {
   // Disable all first
   [drawBtn, devBtn, warBtn, projBtn, passBtn].forEach(b => b.disabled = true);
 
+  const waitBanner = document.getElementById('mpWaitBanner');
+  const isMulti = MP.mode === 'multi';
+
   if (phase === 'draw') {
-    phaseEl.textContent = 'Открой карточку события';
-    drawBtn.disabled = (MP.mode === 'multi' && !MP.isHost);
     document.getElementById('turnBadge').textContent = 'Раунд ' + G.round;
-  } else if (phase === 'player') {
-    const myTurn = mpIsMyTurn();
-    if (myTurn) {
-      const humansByNum = G.countries.filter(c=>c.humanUid).sort((a,b)=>(a.playerNum||0)-(b.playerNum||0));
-      const cur = humansByNum[G.humanTurnIdx||0];
-      phaseEl.textContent = MP.mode==='multi' ? `Ход Игрока ${cur?.playerNum||1} — твой ход` : 'Твой ход — развивайся и действуй';
+    if (isMulti && !MP.isHost) {
+      // Non-host: hide draw button, show waiting
+      drawBtn.style.display = 'none';
+      if (waitBanner) { waitBanner.style.display='block'; waitBanner.textContent='Ожидание: Игрок 1 открывает событие…'; }
+      phaseEl.textContent = 'Ожидание события…';
     } else {
-      const humansByNum = G.countries.filter(c=>c.humanUid).sort((a,b)=>(a.playerNum||0)-(b.playerNum||0));
-      const cur = humansByNum[G.humanTurnIdx||0];
+      drawBtn.style.display = '';
+      drawBtn.disabled = false;
+      if (waitBanner) waitBanner.style.display='none';
+      phaseEl.textContent = 'Открой карточку события';
+    }
+  } else if (phase === 'player') {
+    drawBtn.style.display = isMulti && !MP.isHost ? 'none' : '';
+    if (waitBanner) waitBanner.style.display = 'none';
+    const myTurn = mpIsMyTurn();
+    const humansByNum = G.countries.filter(c=>c.humanUid).sort((a,b)=>(a.playerNum||0)-(b.playerNum||0));
+    const cur = humansByNum[G.humanTurnIdx||0];
+    if (myTurn) {
+      phaseEl.textContent = isMulti ? `Твой ход (Игрок ${cur?.playerNum||1})` : 'Твой ход — развивайся и действуй';
+      document.getElementById('turnBadge').textContent = 'Твой ход';
+      if (waitBanner) waitBanner.style.display = 'none';
+    } else {
       phaseEl.textContent = `Ход Игрока ${cur?.playerNum||'?'}…`;
+      document.getElementById('turnBadge').textContent = `Игрок ${cur?.playerNum||'?'}`;
+      if (waitBanner) { waitBanner.style.display='block'; waitBanner.textContent=`Ожидание: Игрок ${cur?.playerNum||'?'} делает ход…`; }
     }
     devBtn.disabled = !myTurn || G.playerDeveloped || G.countries[0].E <= 0;
     warBtn.disabled = !myTurn || G.playerActed || G.noWar || G.countries[0].A < 5 || G.countries[0].E < 4;
     projBtn.disabled = !myTurn || G.playerActed;
     passBtn.disabled = !myTurn;
-    document.getElementById('turnBadge').textContent = 'Твой ход';
     if (G.playerDeveloped) devBtn.classList.add('used'); else devBtn.classList.remove('used');
   } else if (phase === 'ai') {
     phaseEl.textContent = 'Ходят другие страны...';
@@ -1964,17 +1980,9 @@ function mpLoadState(state, playersMap) {
   MP.mode = 'multi';
   G.playerIdx = 0;
 
-  // Show whose turn it is
-  const activePlayer = humansByNum[state.humanTurnIdx || 0];
-  if (activePlayer && !isMyTurn) {
-    document.getElementById('phaseInfo') && (
-      document.getElementById('phaseInfo').textContent =
-        `Ход Игрока ${activePlayer.playerNum}…`
-    );
-  }
-
   renderGame();
   switchScreen('gameScreen');
+  setPhase(G.phase);
 
   // Non-host: watch for state updates
   if (!MP.isHost) mpWatchGame();
