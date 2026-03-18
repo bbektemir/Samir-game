@@ -954,11 +954,19 @@ function setPhase(phase) {
     document.getElementById('turnBadge').textContent = 'Раунд ' + G.round;
   } else if (phase === 'player') {
     const myTurn = mpIsMyTurn();
-    phaseEl.textContent = myTurn ? 'Твой ход — развивайся и действуй' : `Ход игрока ${(G.currentHumanTurn||0)+1}…`;
-    devBtn.disabled = !myTurn || G.playerDeveloped || G.countries[G.playerIdx||0].E <= 0;
-    warBtn.disabled = G.playerActed || G.noWar || G.countries[0].A < 5 || G.countries[0].E < 4;
-    projBtn.disabled = G.playerActed;
-    passBtn.disabled = false;
+    if (myTurn) {
+      const humansByNum = G.countries.filter(c=>c.humanUid).sort((a,b)=>(a.playerNum||0)-(b.playerNum||0));
+      const cur = humansByNum[G.humanTurnIdx||0];
+      phaseEl.textContent = MP.mode==='multi' ? `Ход Игрока ${cur?.playerNum||1} — твой ход` : 'Твой ход — развивайся и действуй';
+    } else {
+      const humansByNum = G.countries.filter(c=>c.humanUid).sort((a,b)=>(a.playerNum||0)-(b.playerNum||0));
+      const cur = humansByNum[G.humanTurnIdx||0];
+      phaseEl.textContent = `Ход Игрока ${cur?.playerNum||'?'}…`;
+    }
+    devBtn.disabled = !myTurn || G.playerDeveloped || G.countries[0].E <= 0;
+    warBtn.disabled = !myTurn || G.playerActed || G.noWar || G.countries[0].A < 5 || G.countries[0].E < 4;
+    projBtn.disabled = !myTurn || G.playerActed;
+    passBtn.disabled = !myTurn;
     document.getElementById('turnBadge').textContent = 'Твой ход';
     if (G.playerDeveloped) devBtn.classList.add('used'); else devBtn.classList.remove('used');
   } else if (phase === 'ai') {
@@ -1437,37 +1445,46 @@ window.launchProject = function(idx) {
 
 async function playerPass() {
   G.playerActed = true;
-  addLog('⏭️ Ты закончил ход');
+  addLog('⏭️ Ход завершён');
 
   if (MP.mode !== 'multi') {
     setPhase('ai');
     return;
   }
 
-  // Multiplayer: mark my turn as done in Firebase
-  await window._fbUpd(`rooms/${MP.roomId}/done`, { [MP.myUid]: true });
+  // Multiplayer: advance to next human player or AI phase
+  const humansByNum = G.countries
+    .filter(c => c.humanUid)
+    .sort((a,b) => (a.playerNum||0)-(b.playerNum||0));
+  const nextIdx = (G.humanTurnIdx||0) + 1;
 
-  // Disable all action buttons while waiting
-  ['drawEventBtn','devBtn','warBtn','projBtn','passBtn'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.disabled = true;
-  });
-  document.getElementById('phaseInfo').textContent = 'Ожидание других игроков…';
-
-  // Sync my country state
-  await mpPushState();
-
-  // Host checks if all humans are done
-  if (MP.isHost) {
-    const snap = await window._fbGet(`rooms/${MP.roomId}`);
-    if (!snap || !snap.exists()) return;
-    const room = snap.val();
-    const players = Object.keys(room.players || {});
-    const done = Object.keys(room.done || {});
-    if (players.every(uid => done.includes(uid))) {
-      // All done — run AI and sync
-      await window._fbSet(`rooms/${MP.roomId}/done`, null);
+  if (nextIdx < humansByNum.length) {
+    // Next human's turn
+    G.humanTurnIdx = nextIdx;
+    G.playerActed = false;
+    G.playerDeveloped = false;
+    const nextPlayer = humansByNum[nextIdx];
+    addLog(`▶️ Ход Игрока ${nextPlayer.playerNum}`);
+    // Push state so next player sees it's their turn
+    await mpPushState();
+    // If I'm host and next player is me (shouldn't happen but just in case)
+    // Just re-render
+    renderGame();
+    setPhase('player');
+  } else {
+    // All humans done — AI phase (only host runs it)
+    G.humanTurnIdx = 0;
+    G.playerActed = false;
+    G.playerDeveloped = false;
+    await mpPushState();
+    if (MP.isHost) {
       setPhase('ai');
+    } else {
+      ['devBtn','warBtn','projBtn','passBtn'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.disabled = true;
+      });
+      document.getElementById('phaseInfo').textContent = 'ИИ делает ходы…';
     }
   }
 }
@@ -1671,38 +1688,34 @@ function addLog(text, type) {
 // ═══════════════════════════════════════════════════════════════════════════
 
 const MP = {
-  roomId:    null,
-  myUid:     null,
-  myName:    null,
-  myIdx:     null,   // country index I control
-  isHost:    false,
-  mode:      'solo', // 'solo' | 'multi'
-  unsubscribe: null,
+  roomId:   null,
+  myUid:    null,
+  myName:   null,
+  myNum:    null,   // 1 = host, 2,3... = others
+  isHost:   false,
+  mode:     'solo', // 'solo' | 'multi'
+  playerOrder: [],  // array of UIDs in turn order
 };
 
 function mpUid() {
   if (!MP.myUid) MP.myUid = 'u' + Math.random().toString(36).slice(2,10);
   return MP.myUid;
 }
-
 function mpRoomCode() {
   return Math.random().toString(36).slice(2,6).toUpperCase();
 }
-
 function showMultiplayer() {
   switchScreen('lobbyScreen');
 }
 
+// ─── Firebase loader ──────────────────────────────────────────────────────────
 function fbLoadScript(src) {
   return new Promise((resolve, reject) => {
     const s = document.createElement('script');
-    s.src = src;
-    s.onload = resolve;
-    s.onerror = reject;
+    s.src = src; s.onload = resolve; s.onerror = reject;
     document.head.appendChild(s);
   });
 }
-
 async function fbInit() {
   if (window._fbReady) return true;
   try {
@@ -1718,42 +1731,35 @@ async function fbInit() {
       appId:             "1:381006167960:web:2519d94b5ea3376ea7b5ed"
     });
     var _db = firebase.database();
-    window._fbSet  = function(path, val) { return _db.ref(path).set(val); };
-    window._fbGet  = function(path) { return _db.ref(path).get(); };
-    window._fbOn   = function(path, cb) { _db.ref(path).on('value', function(snap){ cb(snap.val()); }); };
-    window._fbUpd  = function(path, val) { return _db.ref(path).update(val); };
+    window._fbSet = (p,v) => _db.ref(p).set(v);
+    window._fbGet = (p)   => _db.ref(p).get();
+    window._fbOn  = (p,cb)=> _db.ref(p).on('value', snap => cb(snap.val()));
+    window._fbUpd = (p,v) => _db.ref(p).update(v);
     window._fbReady = true;
     return true;
-  } catch(e) {
-    alert('Не удалось загрузить Firebase: ' + e.message);
-    return false;
-  }
+  } catch(e) { alert('Firebase error: ' + e.message); return false; }
 }
 
+// ─── Create / Join ────────────────────────────────────────────────────────────
 async function mpCreateRoom() {
   if (!await fbInit()) return;
   const name = document.getElementById('playerNameInput').value.trim() || 'Игрок 1';
-  MP.myName = name;
   MP.myUid  = mpUid();
+  MP.myName = name;
   MP.isHost = true;
+  MP.myNum  = 1;
   MP.roomId = mpRoomCode();
 
-  try {
-    await window._fbSet(`rooms/${MP.roomId}`, {
-      status:  'lobby',
-      host:    MP.myUid,
-      players: { [MP.myUid]: { name, ready: false, countryIdx: null } }
-    });
-  } catch(e) {
-    alert('Ошибка подключения к базе данных: ' + e.message);
-    return;
-  }
+  await window._fbSet(`rooms/${MP.roomId}`, {
+    status: 'lobby',
+    host:   MP.myUid,
+    players: { [MP.myUid]: { name, num: 1, countryId: null } }
+  });
 
   document.getElementById('roomCodeDisplay').textContent = MP.roomId;
   document.getElementById('lobbyCreate').style.display = 'none';
   document.getElementById('lobbyRoom').style.display   = 'block';
   document.getElementById('lobbyStartBtn').style.display = 'block';
-
   mpWatchLobby();
 }
 
@@ -1768,23 +1774,27 @@ async function mpJoinRoom() {
   const room = snap.val();
   if (room.status !== 'lobby') { alert('Игра уже началась'); return; }
 
-  MP.myName = name;
   MP.myUid  = mpUid();
+  MP.myName = name;
   MP.isHost = false;
   MP.roomId = code;
 
+  // Assign next number
+  const existingNums = Object.values(room.players || {}).map(p => p.num);
+  MP.myNum = Math.max(0, ...existingNums) + 1;
+
   await window._fbUpd(`rooms/${code}/players`, {
-    [MP.myUid]: { name, ready: false, countryIdx: null }
+    [MP.myUid]: { name, num: MP.myNum, countryId: null }
   });
 
   document.getElementById('roomCodeDisplay').textContent = MP.roomId;
   document.getElementById('lobbyCreate').style.display = 'none';
   document.getElementById('lobbyRoom').style.display   = 'block';
   document.getElementById('lobbyWaitMsg').style.display = 'none';
-
   mpWatchLobby();
 }
 
+// ─── Lobby ────────────────────────────────────────────────────────────────────
 function mpBuildCountryPicker(takenByOthers) {
   const picker = document.getElementById('lobbyCountryPicker');
   if (!picker) return;
@@ -1792,8 +1802,8 @@ function mpBuildCountryPicker(takenByOthers) {
     const taken = takenByOthers.includes(c.id);
     const mine  = MP.myCountryId === c.id;
     return `<button onclick="mpPickCountry('${c.id}')"
-      style="padding:0.3rem 0.6rem;border-radius:4px;border:1px solid ${mine?'var(--gold)':taken?'#444':'var(--border)'};
-      background:${mine?'rgba(201,168,76,0.2)':'transparent'};color:${taken?'#555':'var(--text)'};
+      style="padding:0.3rem 0.6rem;border-radius:4px;border:1px solid ${mine?'var(--gold)':taken?'#333':'var(--border)'};
+      background:${mine?'rgba(201,168,76,0.2)':'transparent'};color:${taken?'#444':'var(--text)'};
       cursor:${taken?'default':'pointer'};font-size:0.85rem;pointer-events:${taken?'none':'auto'}">
       ${c.flag} ${c.name}
     </button>`;
@@ -1802,44 +1812,35 @@ function mpBuildCountryPicker(takenByOthers) {
 
 async function mpPickCountry(id) {
   MP.myCountryId = id;
-  const chosen = COUNTRIES.find(c=>c.id===id);
-  if (chosen) document.getElementById('lobbyMyChoice').textContent = 'Выбрано: ' + chosen.flag + ' ' + chosen.name;
+  const c = COUNTRIES.find(cc => cc.id === id);
+  document.getElementById('lobbyMyChoice').textContent = 'Выбрано: ' + c.flag + ' ' + c.name;
   await window._fbUpd(`rooms/${MP.roomId}/players/${MP.myUid}`, { countryId: id });
 }
 
 function mpWatchLobby() {
-  // Force show picker and hide wait message immediately
-  setTimeout(() => {
-    document.getElementById('lobbyWaitMsg').style.display = 'none';
-    document.getElementById('lobbyCountryPicker').style.display = 'flex';
-    mpBuildCountryPicker([]);
-  }, 100);
-
-  window._fbOn(`rooms/${MP.roomId}`, (room) => {
+  mpBuildCountryPicker([]);
+  window._fbOn(`rooms/${MP.roomId}`, room => {
     if (!room) return;
     const players = room.players || {};
 
-    // Always hide wait message and show picker
-    document.getElementById('lobbyWaitMsg').style.display = 'none';
-    document.getElementById('lobbyCountryPicker').style.display = 'flex';
-
-    // Taken countries by others
+    // Taken countries
     const takenByOthers = Object.entries(players)
-      .filter(([uid, p]) => uid !== MP.myUid && p.countryId)
-      .map(([_, p]) => p.countryId);
+      .filter(([uid]) => uid !== MP.myUid)
+      .map(([,p]) => p.countryId).filter(Boolean);
     mpBuildCountryPicker(takenByOthers);
 
-    // Player list
+    // Player list sorted by num
+    const sorted = Object.entries(players).sort((a,b) => a[1].num - b[1].num);
     const list = document.getElementById('lobbyPlayerList');
-    if (list) list.innerHTML = Object.entries(players).map(([uid, p]) => {
-      const country = p.countryId ? (COUNTRIES.find(c=>c.id===p.countryId) || null) : null;
+    if (list) list.innerHTML = sorted.map(([uid, p]) => {
+      const c = p.countryId ? COUNTRIES.find(cc => cc.id === p.countryId) : null;
       return `<div style="padding:0.4rem 0;border-bottom:1px solid var(--border);color:${uid===MP.myUid?'var(--gold)':'var(--text)'}">
-        ${uid === room.host ? '👑 ' : ''}${p.name}
-        ${country ? ' — ' + country.flag + ' ' + country.name : ' — не выбрал'}
+        Игрок ${p.num}${uid===room.host?' 👑':''}: ${p.name}
+        ${c ? ' — ' + c.flag + ' ' + c.name : ' — не выбрал'}
       </div>`;
     }).join('');
 
-    // Start button for host
+    // Host: show start button when all chose
     if (MP.isHost) {
       const allChosen = Object.values(players).every(p => p.countryId);
       const btn = document.getElementById('lobbyStartBtn');
@@ -1851,28 +1852,30 @@ function mpWatchLobby() {
       }
     }
 
-    // Game launched — load state
+    // Game started
     if (room.status === 'playing' && room.gameState) {
-      Object.entries(players).forEach(([uid], i) => {
-        if (uid === MP.myUid) MP.myIdx = i;
-      });
-      mpLoadState(room.gameState);
+      mpLoadState(room.gameState, room.players);
     }
   });
 }
 
+// ─── Start game (host only) ───────────────────────────────────────────────────
 async function mpStartGame() {
   const snap = await window._fbGet(`rooms/${MP.roomId}`);
   if (!snap || !snap.exists()) return;
   const room = snap.val();
-  const playerList = Object.entries(room.players || {});
+  const players = room.players || {};
 
-  // Build countries: humans first, then AI to fill to 6
-  const humanCountries = playerList.map(([uid, p]) => {
-    const c = COUNTRIES.find(cc => cc.id === p.countryId) || COUNTRIES[0];
+  // Sort players by num → defines turn order
+  const sorted = Object.entries(players).sort((a,b) => a[1].num - b[1].num);
+  MP.playerOrder = sorted.map(([uid]) => uid);
+
+  // Build countries array: humans in turn order, then AI
+  const humanCountries = sorted.map(([uid, p]) => {
+    const c = COUNTRIES.find(cc => cc.id === p.countryId);
     return { ...c, R:c.R,S:c.S,H:c.H,A:c.A,E:c.E,
       startR:c.R,startS:c.S,startH:c.H,startA:c.A,startE:c.E,
-      usedProjects:[], failedProjects:[], isPlayer:false, humanUid:uid };
+      usedProjects:[], failedProjects:[], isPlayer:false, humanUid:uid, playerNum:p.num };
   });
   const usedIds = humanCountries.map(c => c.id);
   const aiCountries = shuffle(COUNTRIES.filter(c => !usedIds.includes(c.id)))
@@ -1881,104 +1884,118 @@ async function mpStartGame() {
       startR:c.R,startS:c.S,startH:c.H,startA:c.A,startE:c.E,
       usedProjects:[], failedProjects:[], isPlayer:false }));
 
+  // Host is always index 0 in this local view
   const allCountries = [...humanCountries, ...aiCountries];
-
-  // Set each human's index
-  playerList.forEach(([uid], i) => {
-    if (uid === MP.myUid) MP.myIdx = i;
-  });
-  allCountries[MP.myIdx].isPlayer = true;
+  allCountries[0].isPlayer = true; // host sees himself at 0
 
   MP.mode = 'multi';
-  G.countries = allCountries;
-  G.playerIdx = MP.myIdx;
-  G.round = 1;
-  G.phase = 'draw';
-  G.noWar = false;
+  G.countries   = allCountries;
+  G.playerIdx   = 0;
+  G.round       = 1;
+  G.phase       = 'draw';
+  G.noWar       = false;
   G.playerActed = false;
   G.playerDeveloped = false;
-  G.currentHumanTurn = 0;
-  G.eventDeck = shuffle([...Array(32).keys()]);
+  G.humanTurnIdx = 0; // index into humanCountries — whose turn among humans
+  G.eventDeck   = shuffle([...Array(EVENTS.length).keys()]);
 
   const state = mpSerialize();
-  await window._fbSet(`rooms/${MP.roomId}/gameState`, state);
-  await window._fbSet(`rooms/${MP.roomId}/status`, 'playing');
+  await window._fbSet(`rooms/${MP.roomId}/playerOrder`, MP.playerOrder);
+  await window._fbSet(`rooms/${MP.roomId}/gameState`,   state);
+  await window._fbSet(`rooms/${MP.roomId}/status`,      'playing');
+
+  switchScreen('gameScreen');
+  renderGame();
+  setPhase('draw');
 }
 
-// Called after game starts in multiplayer mode — sync state to Firebase
-async function mpPushState() {
-  if (MP.mode !== 'multi') return;
-  const state = mpSerialize();
-  await window._fbSet(`rooms/${MP.roomId}/gameState`, state);
-}
-
+// ─── State sync ───────────────────────────────────────────────────────────────
 function mpSerialize() {
   return {
-    round: G.round,
-    phase: G.phase,
-    noWar: G.noWar,
-    playerActed: G.playerActed,
-    playerDeveloped: G.playerDeveloped,
-    currentEvent: G.currentEvent ? { name: G.currentEvent.name } : null,
+    round: G.round, phase: G.phase, noWar: G.noWar,
+    playerActed: G.playerActed, playerDeveloped: G.playerDeveloped,
+    humanTurnIdx: G.humanTurnIdx || 0,
     eventDeck: G.eventDeck,
-    currentHumanTurn: G.currentHumanTurn || 0,
+    currentEvent: G.currentEvent ? { name: G.currentEvent.name } : null,
     countries: G.countries.map(c => ({
-      id: c.id, R: c.R, S: c.S, H: c.H, A: c.A, E: c.E,
-      startR: c.startR, startS: c.startS, startH: c.startH, startA: c.startA, startE: c.startE,
-      usedProjects: c.usedProjects,
-      failedProjects: c.failedProjects || [],
-      isPlayer: c.isPlayer,
-      humanUid: c.humanUid || null,
-      log: c.log || [],
+      id:c.id, R:c.R,S:c.S,H:c.H,A:c.A,E:c.E,
+      startR:c.startR,startS:c.startS,startH:c.startH,startA:c.startA,startE:c.startE,
+      usedProjects:c.usedProjects, failedProjects:c.failedProjects||[],
+      humanUid:c.humanUid||null, playerNum:c.playerNum||null, isPlayer:c.isPlayer,
     }))
   };
 }
 
-function mpWatchGame() {
+async function mpPushState() {
   if (MP.mode !== 'multi') return;
-  window._fbOn(`rooms/${MP.roomId}/gameState`, (state) => {
-    if (!state) return;
-    // Don't reload if it's our own push or we're in AI phase (host drives)
-    if (MP.isHost) return;
-    mpLoadState(state);
-  });
-  // Non-host: watch done list — when cleared, it means AI ran, new state incoming
+  await window._fbSet(`rooms/${MP.roomId}/gameState`, mpSerialize());
 }
 
-function mpLoadState(state) {
-  G.round          = state.round;
-  G.phase          = state.phase;
-  G.noWar          = state.noWar;
-  G.playerActed    = state.playerActed;
-  G.playerDeveloped = state.playerDeveloped;
-  G.eventDeck      = state.eventDeck;
-  G.currentHumanTurn = state.currentHumanTurn || 0;
-  // Find my country by UID and reorder so it's always index 0
-  const myCountryIdx = state.countries.findIndex(c => c.humanUid === MP.myUid);
-  const reordered = myCountryIdx >= 0
-    ? [state.countries[myCountryIdx], ...state.countries.filter((_, i) => i !== myCountryIdx)]
+function mpLoadState(state, playersMap) {
+  // Find my country by humanUid, put it at index 0
+  const myIdx = state.countries.findIndex(c => c.humanUid === MP.myUid);
+  const ordered = myIdx >= 0
+    ? [state.countries[myIdx], ...state.countries.filter((_,i)=>i!==myIdx)]
     : state.countries;
-  MP.myIdx = 0;
-  G.playerIdx = 0;
-  G.countries = reordered.map((c, i) => ({
-    ...COUNTRIES.find(cc => cc.id === c.id),
-    ...c,
+
+  // humanTurnIdx refers to position in original order (by playerNum)
+  // Find which humanUid has the turn
+  const humansByNum = state.countries
+    .filter(c => c.humanUid)
+    .sort((a,b) => (a.playerNum||0)-(b.playerNum||0));
+  const activeTurnUid = humansByNum[state.humanTurnIdx || 0]?.humanUid || null;
+  const isMyTurn = activeTurnUid === MP.myUid;
+
+  G.round           = state.round;
+  G.phase           = state.phase;
+  G.noWar           = state.noWar;
+  G.playerActed     = isMyTurn ? state.playerActed : true; // block buttons if not my turn
+  G.playerDeveloped = isMyTurn ? state.playerDeveloped : true;
+  G.humanTurnIdx    = state.humanTurnIdx || 0;
+  G.eventDeck       = state.eventDeck;
+  G.countries       = ordered.map((c,i) => ({
+    ...COUNTRIES.find(cc=>cc.id===c.id), ...c,
     isPlayer: i === 0,
   }));
   if (state.currentEvent) {
-    G.currentEvent = EVENTS.find(e => e.name === state.currentEvent.name) || null;
+    G.currentEvent = EVENTS.find(e=>e.name===state.currentEvent.name)||null;
   }
+
+  MP.mode = 'multi';
+  G.playerIdx = 0;
+
+  // Show whose turn it is
+  const activePlayer = humansByNum[state.humanTurnIdx || 0];
+  if (activePlayer && !isMyTurn) {
+    document.getElementById('phaseInfo') && (
+      document.getElementById('phaseInfo').textContent =
+        `Ход Игрока ${activePlayer.playerNum}…`
+    );
+  }
+
   renderGame();
   switchScreen('gameScreen');
-  mpWatchGame();
+
+  // Non-host: watch for state updates
+  if (!MP.isHost) mpWatchGame();
 }
 
-// Is it currently my turn to act?
+function mpWatchGame() {
+  window._fbOn(`rooms/${MP.roomId}/gameState`, state => {
+    if (!state || MP.isHost) return;
+    mpLoadState(state, null);
+  });
+}
+
 function mpIsMyTurn() {
-  if (MP.mode === 'solo') return true;
-  return (G.currentHumanTurn || 0) === MP.myIdx;
+  if (MP.mode !== 'multi') return true;
+  // Find whose turn it is by humanTurnIdx
+  const humansByNum = G.countries
+    .filter(c => c.humanUid)
+    .sort((a,b)=>(a.playerNum||0)-(b.playerNum||0));
+  const active = humansByNum[G.humanTurnIdx||0];
+  return active && active.humanUid === MP.myUid;
 }
-
 // Watch for remote state updates (non-host players)
 function switchScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
