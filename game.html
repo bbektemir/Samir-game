@@ -4,2023 +4,1281 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Страны, Армии, Мир</title>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --gold: #c9a84c;
-    --gold-light: #e8c96a;
-    --dark: #0d1117;
-    --dark2: #161b22;
-    --dark3: #1f2937;
-    --dark4: #2d3748;
-    --text: #e2d9c9;
-    --text-dim: #9ca3af;
-    --red: #dc3545;
-    --green: #28a745;
-    --blue: #3b82f6;
-    --purple: #8b5cf6;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--dark);
-    color: var(--text);
-    font-family: 'Crimson Pro', Georgia, serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
-    background: radial-gradient(ellipse at 20% 20%, rgba(201,168,76,0.04) 0%, transparent 60%),
-                radial-gradient(ellipse at 80% 80%, rgba(59,130,246,0.04) 0%, transparent 60%);
-    pointer-events: none; z-index: 0;
-  }
+:root{
+  --bg:#0d1117;--bg2:#111827;--card:#162030;--card2:#1c2a3e;
+  --gold:#c9a84c;--gold2:#e8c96a;--goldd:#7a5d20;--goldbg:rgba(201,168,76,0.12);
+  --text:#ddd0b0;--textd:#7a6a4a;--red:#c0392b;--green:#27ae60;--blue:#2980b9;
+  --border:#243040;--borderg:rgba(201,168,76,0.25);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'EB Garamond',serif;min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--goldd);border-radius:3px}
 
-  /* ─── SCREENS ─── */
-  .screen { display: none; position: relative; z-index: 1; }
-  .screen.active { display: block; }
+/* ── TITLE SCREEN ── */
+#titleScreen{
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:40px 20px;
+  background:radial-gradient(ellipse 80% 40% at 50% 0%,rgba(201,168,76,.18) 0%,transparent 70%),var(--bg);
+}
+.ts-row{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:32px}
+.ts-btn{
+  -webkit-appearance:none;appearance:none;
+  padding:14px 44px;font-family:'Jost',sans-serif;font-size:1rem;font-weight:600;
+  border-radius:6px;cursor:pointer;letter-spacing:.06em;transition:all .18s;
+  background:var(--goldbg);border:1px solid var(--goldd);color:var(--gold);
+}
+.ts-btn:hover{background:rgba(201,168,76,.25);border-color:var(--gold);transform:translateY(-2px)}
+.ts-btn.ts-mp{
+  background:linear-gradient(135deg,var(--goldd),var(--gold));border:none;color:#160f00;
+}
+.ts-btn.ts-mp:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(201,168,76,.4)}
 
-  /* ─── TITLE SCREEN ─── */
-  #titleScreen {
-    min-height: 100vh;
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem;
-  }
-  #titleScreen.active { display: flex; }
-  .title-logo {
-    font-family: 'Cinzel', serif;
-    font-size: clamp(2rem, 6vw, 4rem);
-    font-weight: 900;
-    color: var(--gold);
-    text-align: center;
-    letter-spacing: 0.05em;
-    text-shadow: 0 0 40px rgba(201,168,76,0.3);
-    margin-bottom: 0.5rem;
-  }
-  .title-sub {
-    font-size: 1.1rem;
-    color: var(--text-dim);
-    text-align: center;
-    font-style: italic;
-    margin-bottom: 3rem;
-  }
-  .btn-primary {
-    background: linear-gradient(135deg, var(--gold), #a07830);
-    color: #0d1117;
-    border: none;
-    padding: 0.9rem 2.5rem;
-    font-family: 'Cinzel', serif;
-    font-size: 1rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    cursor: pointer;
-    border-radius: 4px;
-    transition: all 0.2s;
-    text-transform: uppercase;
-  }
-  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(201,168,76,0.3); }
-  .btn-primary:active { transform: translateY(0); }
-  .btn-secondary {
-    background: transparent;
-    color: var(--text-dim);
-    border: 1px solid var(--dark4);
-    padding: 0.6rem 1.4rem;
-    font-family: 'Crimson Pro', serif;
-    font-size: 0.95rem;
-    cursor: pointer;
-    border-radius: 4px;
-    transition: all 0.2s;
-  }
-  .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
-  .btn-danger {
-    background: linear-gradient(135deg, #dc3545, #9b1a25);
-    color: white;
-    border: none;
-    padding: 0.7rem 1.6rem;
-    font-family: 'Cinzel', serif;
-    font-size: 0.85rem;
-    font-weight: 700;
-    cursor: pointer;
-    border-radius: 4px;
-    transition: all 0.2s;
-    letter-spacing: 0.05em;
-  }
-  .btn-danger:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(220,53,69,0.4); }
-  .btn-success {
-    background: linear-gradient(135deg, #28a745, #1a6b2c);
-    color: white;
-    border: none;
-    padding: 0.7rem 1.6rem;
-    font-family: 'Cinzel', serif;
-    font-size: 0.85rem;
-    font-weight: 700;
-    cursor: pointer;
-    border-radius: 4px;
-    transition: all 0.2s;
-  }
-  .btn-success:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(40,167,69,0.4); }
-  .btn-disabled {
-    opacity: 0.4;
-    cursor: not-allowed !important;
-    pointer-events: none;
-  }
+/* ── MP SETUP ── */
+#mpSetup{
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  padding:60px 20px;
+  background:radial-gradient(ellipse 80% 40% at 50% 0%,rgba(201,168,76,.15) 0%,transparent 70%),var(--bg);
+}
+.mp-form{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;max-width:360px;margin-top:8px}
+.mp-input{
+  width:100%;padding:11px 14px;background:var(--card);border:1px solid var(--border);
+  border-radius:6px;color:var(--text);font-family:'Jost',sans-serif;font-size:.95rem;outline:none;
+}
+.mp-input:focus{border-color:var(--goldd)}
+.mp-input::placeholder{color:var(--textd)}
+.mp-or{color:var(--textd);font-size:.82rem;letter-spacing:.15em;text-transform:uppercase;margin:6px 0}
+.mp-join-row{display:flex;gap:8px;width:100%}
+.mp-join-row .mp-input{flex:1}
+.mp-back{
+  -webkit-appearance:none;appearance:none;
+  background:none;border:none;color:var(--textd);font-family:'Jost',sans-serif;
+  font-size:.85rem;cursor:pointer;margin-top:16px;padding:6px;transition:color .15s;
+}
+.mp-back:hover{color:var(--text)}
+.mp-err{color:#e06050;font-size:.82rem;text-align:center;min-height:18px}
 
-  /* ─── COUNTRY SELECT ─── */
-  #selectScreen { padding: 2rem; max-width: 1200px; margin: 0 auto; }
-  .select-title {
-    font-family: 'Cinzel', serif;
-    font-size: 1.6rem;
-    color: var(--gold);
-    text-align: center;
-    margin-bottom: 0.5rem;
-  }
-  .select-sub { text-align: center; color: var(--text-dim); margin-bottom: 2rem; font-style: italic; }
-  .countries-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-  .country-card {
-    background: var(--dark2);
-    border: 2px solid var(--dark4);
-    border-radius: 8px;
-    padding: 1.2rem 1rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-align: center;
-  }
-  .country-card:hover { border-color: var(--gold); transform: translateY(-3px); }
-  .country-card.selected { border-color: var(--gold); background: rgba(201,168,76,0.1); }
-  .country-flag { font-size: 2.5rem; margin-bottom: 0.5rem; }
-  .country-name { font-family: 'Cinzel', serif; font-size: 0.9rem; color: var(--gold); margin-bottom: 0.8rem; }
-  .mini-stats { font-size: 0.78rem; color: var(--text-dim); line-height: 1.6; }
-  .mini-stat { display: flex; justify-content: space-between; }
-  .mini-stat-val { color: var(--text); }
+/* ── MP WAITING ROOM ── */
+#mpRoom{
+  min-height:100vh;display:flex;flex-direction:column;
+  padding:0;
+  background:radial-gradient(ellipse 60% 30% at 50% 0%,rgba(201,168,76,.12) 0%,transparent 65%),var(--bg);
+}
+.mp-room-header{
+  background:var(--bg2);border-bottom:1px solid var(--borderg);
+  padding:14px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+}
+.mp-code-label{font-family:'Jost',sans-serif;font-size:.8rem;color:var(--textd);letter-spacing:.1em;text-transform:uppercase}
+.mp-code{
+  font-family:'Jost',sans-serif;font-size:1.5rem;font-weight:700;color:var(--gold);
+  letter-spacing:.2em;background:var(--goldbg);padding:4px 14px;border-radius:5px;border:1px solid var(--goldd);
+}
+.mp-room-sub{font-family:'Jost',sans-serif;font-size:.82rem;color:var(--textd);margin-left:auto}
+.mp-room-body{display:flex;gap:0;flex:1;overflow:hidden}
+.mp-players-col{
+  width:220px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);
+  padding:16px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;
+}
+.mp-countries-col{flex:1;padding:20px;overflow-y:auto}
+.mp-player-row{
+  background:var(--card);border:1px solid var(--border);border-radius:6px;
+  padding:9px 12px;display:flex;flex-direction:column;gap:3px;
+}
+.mp-player-name{font-family:'Jost',sans-serif;font-size:.85rem;font-weight:600;color:var(--text)}
+.mp-player-country{font-size:.75rem;color:var(--textd)}
+.mp-player-row.me{border-color:var(--goldd)}
+.mp-player-row.host-badge::before{
+  content:'Хост';display:block;font-size:.65rem;color:var(--gold);
+  letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px;
+}
+.mp-room-foot{
+  padding:16px 24px;background:var(--bg2);border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+}
+.cc.taken{opacity:.35;pointer-events:none;filter:grayscale(60%)}
+.cc.mine-sel{border-color:var(--gold);background:var(--card2);box-shadow:0 0 22px rgba(201,168,76,.3)}
 
-  /* ─── GAME SCREEN ─── */
-  #gameScreen { padding: 0.6rem; max-width: 960px; margin: 0 auto; }
-  .game-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.6rem;
-    padding: 0.5rem 0.9rem;
-    background: var(--dark2);
-    border-radius: 8px;
-    border: 1px solid var(--dark4);
-  }
-  .round-info { font-family: 'Cinzel', serif; font-size: 0.9rem; color: var(--gold); }
-  .phase-info { font-size: 0.8rem; color: var(--text-dim); font-style: italic; }
+/* ── LOBBY (SP) ── */
+#lobby{
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  padding:48px 20px 60px;
+  background:radial-gradient(ellipse 80% 40% at 50% 0%,rgba(201,168,76,.18) 0%,transparent 70%),var(--bg);
+}
+.lobby-title{font-family:'Jost',sans-serif;font-size:clamp(2rem,5vw,3.4rem);font-weight:700;color:var(--gold);text-align:center;letter-spacing:.08em;text-shadow:0 0 60px rgba(201,168,76,.5);margin-bottom:6px}
+.lobby-sub{font-family:'Jost',sans-serif;font-size:.95rem;color:var(--textd);letter-spacing:.22em;margin-bottom:6px;text-align:center}
+.gold-line{width:120px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:12px auto 28px}
+.lobby-prompt{font-family:'Jost',sans-serif;font-size:1.1rem;color:var(--gold2);margin-bottom:20px;letter-spacing:.1em;text-align:center}
+.cg{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:10px;width:100%;max-width:1260px}
+.cc{background:var(--card);border:1px solid var(--border);border-radius:7px;padding:14px;cursor:pointer;transition:border-color .18s,background .18s,transform .18s,box-shadow .18s}
+.cc:hover{border-color:var(--goldd);background:var(--card2);transform:translateY(-2px);box-shadow:0 4px 18px rgba(201,168,76,.18)}
+.cc.sel{border-color:var(--gold);background:var(--card2);box-shadow:0 0 22px rgba(201,168,76,.3)}
+.cc-flag{font-size:1.9rem;margin-bottom:7px}
+.cc-name{font-family:'Jost',sans-serif;font-size:.88rem;font-weight:600;color:var(--gold);margin-bottom:10px;font-variant:small-caps}
+.sb-row{display:flex;align-items:center;gap:5px;margin-bottom:5px}
+.sb-lbl{width:18px;font-size:.75rem}
+.sb{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.sb-fill{height:100%;border-radius:3px}
+.sb-val{font-size:.73rem;width:14px;text-align:right}
+.start-btn{
+  -webkit-appearance:none;appearance:none;
+  margin-top:30px;padding:13px 52px;font-family:'Jost',sans-serif;font-size:1rem;font-weight:700;
+  background:linear-gradient(135deg,var(--goldd),var(--gold));border:none;color:#160f00;
+  border-radius:6px;cursor:pointer;letter-spacing:.1em;text-transform:uppercase;transition:transform .18s,box-shadow .18s;
+}
+.start-btn:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(201,168,76,.4)}
+.start-btn:disabled{opacity:.38;cursor:not-allowed;transform:none!important;box-shadow:none!important}
 
-  .game-layout {
-    display: grid;
-    grid-template-columns: 1fr 260px;
-    gap: 0.6rem;
-    align-items: start;
-  }
-  @media (max-width: 700px) { .game-layout { grid-template-columns: 1fr; } }
-
-  /* ─── COUNTRIES AREA ─── */
-  .countries-area { display: flex; flex-direction: column; gap: 0.6rem; }
-  .player-country-card {
-    background: var(--dark2);
-    border: 2px solid var(--gold);
-    border-radius: 8px;
-    padding: 0.8rem 1rem;
-    position: relative;
-  }
-  .ai-countries-row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.6rem;
-  }
-  .ai-country-card {
-    background: var(--dark2);
-    border: 1px solid var(--dark4);
-    border-radius: 8px;
-    padding: 0.7rem;
-    transition: border-color 0.2s;
-  }
-  .ai-country-card.war-target {
-    border-color: var(--red) !important;
-    cursor: pointer;
-  }
-  .ai-country-card.war-target:hover { background: rgba(220,53,69,0.1); }
-
-  .card-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.7rem; }
-  .card-flag { font-size: 1.4rem; }
-  .card-name { font-family: 'Cinzel', serif; font-size: 0.8rem; color: var(--gold); line-height: 1.2; }
-  .you-badge {
-    background: var(--gold);
-    color: var(--dark);
-    font-size: 0.6rem;
-    font-family: 'Cinzel', serif;
-    padding: 0.1rem 0.4rem;
-    border-radius: 20px;
-    font-weight: 700;
-  }
-
-  /* Player card: two-column stats with bars */
-  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.3rem 0.8rem; }
-  .stat-row { display: flex; align-items: center; gap: 0.4rem; }
-  .stat-icon { font-size: 0.8rem; width: 16px; text-align: center; flex-shrink: 0; }
-  .stat-label { font-size: 0.7rem; color: var(--text-dim); flex: 1; white-space: nowrap; }
-  .stat-value {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--text);
-    min-width: 18px;
-    text-align: right;
-    flex-shrink: 0;
-  }
-  .stat-bar {
-    flex: 1;
-    height: 3px;
-    background: var(--dark4);
-    border-radius: 2px;
-    overflow: hidden;
-    min-width: 30px;
-  }
-  .stat-bar-fill {
-    height: 100%;
-    border-radius: 2px;
-    transition: width 0.4s ease;
-  }
-  .stat-bar-fill.resources { background: #4ade80; }
-  .stat-bar-fill.science { background: #60a5fa; }
-  .stat-bar-fill.happiness { background: #fbbf24; }
-  .stat-bar-fill.army { background: #f87171; }
-  .stat-bar-fill.economy { background: #a78bfa; }
-
-  /* AI cards: compact single-column, no bars */
-  .ai-stats { display: flex; flex-direction: column; gap: 0.25rem; }
-  .ai-stat-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem; }
-  .ai-stat-label { color: var(--text-dim); }
-  .ai-stat-val { color: var(--text); font-weight: 600; }
-  .ai-stat-bar { flex: 1; height: 3px; background: var(--dark4); border-radius: 2px; overflow: hidden; margin: 0 0.4rem; }
-  .ai-stat-bar-fill { height: 100%; border-radius: 2px; }
-
-  .stat-delta {
-    font-size: 0.7rem;
-    min-width: 24px;
-    text-align: right;
-    font-weight: 700;
-    flex-shrink: 0;
-  }
-  .stat-delta.pos { color: #4ade80; }
-  .stat-delta.neg { color: #f87171; }
-
-  /* ─── RIGHT PANEL ─── */
-  .right-panel { display: flex; flex-direction: column; gap: 0.6rem; }
-
-  .panel-card {
-    background: var(--dark2);
-    border: 1px solid var(--dark4);
-    border-radius: 8px;
-    padding: 0.7rem;
-  }
-  .panel-title {
-    font-family: 'Cinzel', serif;
-    font-size: 0.75rem;
-    color: var(--gold);
-    margin-bottom: 0.6rem;
-    padding-bottom: 0.3rem;
-    border-bottom: 1px solid var(--dark4);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  /* Event card */
-  .event-card {
-    background: var(--dark3);
-    border: 1px solid var(--dark4);
-    border-radius: 8px;
-    padding: 0.7rem;
-    text-align: center;
-    min-height: 90px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    transition: all 0.3s;
-  }
-  .event-card.revealed { border-color: var(--gold); }
-  .event-icon { font-size: 1.8rem; margin-bottom: 0.3rem; }
-  .event-name { font-family: 'Cinzel', serif; font-size: 0.8rem; color: var(--gold); margin-bottom: 0.3rem; }
-  .event-desc { font-size: 0.72rem; color: var(--text-dim); line-height: 1.4; font-style: italic; }
-
-  /* Action buttons */
-  .action-buttons { display: flex; flex-direction: column; gap: 0.5rem; }
-  .action-btn {
-    background: var(--dark3);
-    border: 1px solid var(--dark4);
-    color: var(--text);
-    padding: 0.45rem 0.7rem;
-    cursor: pointer;
-    border-radius: 6px;
-    font-family: 'Crimson Pro', serif;
-    font-size: 0.82rem;
-    transition: all 0.2s;
-    text-align: left;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    line-height: 1.3;
-  }
-  .action-btn:hover:not(:disabled) { border-color: var(--gold); color: var(--gold); }
-  .action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .action-btn.used { opacity: 0.5; }
-  .action-icon { font-size: 1.1rem; }
-
-  /* Log */
-  .game-log {
-    font-size: 0.72rem;
-    line-height: 1.6;
-    color: var(--text-dim);
-    max-height: 130px;
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: var(--dark4) transparent;
-  }
-  .log-entry { padding: 0.1rem 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
-  .log-entry.important { color: var(--gold); }
-  .log-entry.war { color: #f87171; }
-  .log-entry.good { color: #4ade80; }
-
-  /* ─── MODAL ─── */
-  .modal-overlay {
-    display: none;
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.8);
-    z-index: 100;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-  }
-  .modal-overlay.active { display: flex; }
-  .modal {
-    background: var(--dark2);
-    border: 1px solid var(--dark4);
-    border-radius: 12px;
-    padding: 2rem;
-    max-width: 500px;
-    width: 100%;
-    position: relative;
-  }
-  .modal-title {
-    font-family: 'Cinzel', serif;
-    font-size: 1.2rem;
-    color: var(--gold);
-    margin-bottom: 1rem;
-    text-align: center;
-  }
-  .modal-text { font-size: 0.95rem; color: var(--text-dim); line-height: 1.7; margin-bottom: 1.2rem; text-align: center; }
-  .modal-buttons { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; flex-direction: column; max-height: 55vh; overflow-y: auto; }
-
-  .project-list { display: flex; flex-direction: column; gap: 0.5rem; max-height: 60vh; overflow-y: auto; }
-  .project-item {
-    background: var(--dark3);
-    border: 1px solid var(--dark4);
-    border-radius: 6px;
-    padding: 0.8rem;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .project-item:hover { border-color: var(--gold); }
-  .project-item.used { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
-  .project-item-name { font-family: 'Cinzel', serif; font-size: 0.85rem; color: var(--gold); margin-bottom: 0.3rem; }
-  .project-item-desc { font-size: 0.78rem; color: var(--text-dim); line-height: 1.5; }
-  .project-success { color: #4ade80; }
-  .project-fail { color: #f87171; }
-
-  .coin {
-    font-size: 4rem;
-    text-align: center;
-    margin: 1rem 0;
-    animation: coinFlip 0.6s ease;
-  }
-  @keyframes coinFlip {
-    0% { transform: rotateY(0); }
-    50% { transform: rotateY(900deg) scale(1.2); }
-    100% { transform: rotateY(1800deg); }
-  }
-
-  /* ─── RESULTS SCREEN ─── */
-  #resultsScreen { padding: 2rem; max-width: 900px; margin: 0 auto; }
-  .results-title {
-    font-family: 'Cinzel', serif;
-    font-size: 2rem;
-    color: var(--gold);
-    text-align: center;
-    margin-bottom: 0.5rem;
-  }
-  .results-sub { text-align: center; color: var(--text-dim); font-style: italic; margin-bottom: 2rem; }
-  .category-list { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem; }
-  .category-item {
-    background: var(--dark2);
-    border: 1px solid var(--dark4);
-    border-radius: 8px;
-    padding: 1rem 1.2rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
-  .category-item.winner { border-color: var(--gold); background: rgba(201,168,76,0.08); }
-  .category-trophy { font-size: 1.8rem; }
-  .category-details { flex: 1; }
-  .category-name { font-family: 'Cinzel', serif; font-size: 0.95rem; color: var(--gold); margin-bottom: 0.2rem; }
-  .category-winner-name { font-size: 0.85rem; color: var(--text-dim); }
-  .category-score { font-family: 'Cinzel', serif; font-size: 1.1rem; color: var(--text); }
-  .star { color: var(--gold); }
-
-  .final-winner {
-    background: linear-gradient(135deg, rgba(201,168,76,0.15), rgba(201,168,76,0.05));
-    border: 2px solid var(--gold);
-    border-radius: 12px;
-    padding: 1.5rem;
-    text-align: center;
-    margin-bottom: 2rem;
-  }
-  .final-title { font-family: 'Cinzel', serif; font-size: 1.4rem; color: var(--gold); margin-bottom: 0.5rem; }
-  .final-name { font-size: 1.1rem; color: var(--text); }
-
-  .all-scores {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 0.8rem;
-    margin-bottom: 2rem;
-  }
-  .score-card {
-    background: var(--dark2);
-    border: 1px solid var(--dark4);
-    border-radius: 8px;
-    padding: 1rem;
-  }
-  .score-card-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.8rem; }
-  .score-card-name { font-family: 'Cinzel', serif; font-size: 0.85rem; color: var(--gold); }
-  .score-stats { font-size: 0.8rem; color: var(--text-dim); line-height: 1.8; }
-
-  .pulse { animation: pulse 1.5s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
-
-  .war-sides { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; }
-  .war-side { background: var(--dark3); border-radius: 8px; padding: 0.8rem; text-align: center; }
-  .war-side-title { font-family: 'Cinzel', serif; font-size: 0.8rem; margin-bottom: 0.5rem; }
-  .war-side-title.attack { color: #f87171; }
-  .war-side-title.defend { color: #60a5fa; }
-  .war-allies { font-size: 0.75rem; color: var(--text-dim); margin-top: 0.4rem; }
-  .ally-btn {
-    background: var(--dark3);
-    border: 1px solid var(--dark4);
-    color: var(--text-dim);
-    padding: 0.4rem 0.8rem;
-    cursor: pointer;
-    border-radius: 4px;
-    font-size: 0.8rem;
-    margin: 0.2rem;
-    transition: all 0.2s;
-  }
-  .ally-btn:hover { border-color: var(--gold); color: var(--gold); }
-  .ally-btn.chosen-attack { border-color: #f87171; color: #f87171; background: rgba(220,53,69,0.15); }
-  .ally-btn.chosen-defend { border-color: #60a5fa; color: #60a5fa; background: rgba(96,165,250,0.15); }
-
-  .turn-indicator {
-    display: inline-block;
-    background: rgba(201,168,76,0.15);
-    border: 1px solid var(--gold);
-    color: var(--gold);
-    font-family: 'Cinzel', serif;
-    font-size: 0.75rem;
-    padding: 0.2rem 0.7rem;
-    border-radius: 20px;
-  }
+/* ── GAME LAYOUT ── */
+#game{display:grid;grid-template-rows:auto auto 1fr;height:100vh;overflow:hidden}
+.gh{background:var(--bg2);border-bottom:1px solid var(--borderg);padding:10px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.gtitle{font-family:'Jost',sans-serif;font-size:1rem;font-weight:700;color:var(--gold);letter-spacing:.08em}
+.round-tag{font-family:'Jost',sans-serif;font-size:.88rem;color:var(--text);background:var(--card);padding:4px 12px;border-radius:4px;border:1px solid var(--borderg)}
+.phase-tag{font-family:'Jost',sans-serif;font-size:.82rem;color:var(--gold2);padding:4px 12px;border-radius:4px;background:var(--goldbg);border:1px solid var(--borderg)}
+.peace-tag{font-size:.8rem;color:#f0c040;background:rgba(240,192,64,.12);padding:3px 10px;border-radius:4px;border:1px solid rgba(240,192,64,.3);display:none}
+.ai-strip{height:56px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;padding:0 14px;overflow-x:auto;flex-shrink:0}
+.ai-strip::-webkit-scrollbar{height:3px}
+.ai-strip::-webkit-scrollbar-thumb{background:var(--goldd);border-radius:2px}
+.ai-mini{display:flex;align-items:center;gap:6px;flex-shrink:0;background:var(--card);border:1px solid var(--border);border-radius:5px;padding:5px 10px;white-space:nowrap}
+.ai-mini.human-p{border-color:var(--goldd)}
+.ai-mini-flag{font-size:1.1rem}
+.ai-mini-name{font-family:'Jost',sans-serif;font-size:.75rem;font-weight:500;color:var(--text)}
+.ai-mini-turn{font-size:.7rem;color:var(--gold);margin-left:3px}
+.gbody{display:grid;grid-template-columns:280px 1fr;overflow:hidden;height:calc(100vh - 52px - 56px)}
+.lp{background:var(--bg2);border-right:1px solid var(--border);padding:14px;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
+.panel-hdr{font-family:'Jost',sans-serif;font-size:.72rem;color:var(--textd);text-transform:uppercase;letter-spacing:.15em;padding-bottom:7px;border-bottom:1px solid var(--border)}
+.player-card{background:var(--card);border:1px solid var(--goldd);border-radius:8px;padding:14px;box-shadow:0 0 20px rgba(201,168,76,.08)}
+.ch{display:flex;align-items:center;gap:9px;margin-bottom:13px}
+.ch-flag{font-size:2rem}
+.ch-name{font-family:'Jost',sans-serif;font-size:.95rem;font-weight:700;color:var(--gold);font-variant:small-caps}
+.stats-block{display:grid;gap:7px}
+.si{display:flex;align-items:center;gap:7px}
+.si-icon{font-size:.95rem;width:18px;text-align:center}
+.si-name{font-size:.82rem;color:var(--textd);width:76px}
+.si-num{font-family:'Jost',sans-serif;font-size:.95rem;font-weight:600;color:var(--gold);width:22px;text-align:right}
+.si-bar{flex:1;height:7px;background:var(--border);border-radius:4px;overflow:hidden}
+.si-fill{height:100%;border-radius:4px;transition:width .3s}
+.ac-section{display:flex;flex-direction:column;gap:7px}
+.abtn{-webkit-appearance:none;appearance:none;width:100%;padding:9px 12px;font-family:'Jost',sans-serif;font-size:.82rem;font-weight:500;letter-spacing:.02em;border:1px solid;border-radius:5px;cursor:pointer;transition:all .18s;text-align:center}
+.abtn:disabled{opacity:.3;cursor:not-allowed;transform:none!important;filter:grayscale(40%)}
+.abtn-draw{background:var(--goldbg);border-color:var(--goldd);color:var(--gold)}
+.abtn-draw:not(:disabled):hover{background:rgba(201,168,76,.28);border-color:var(--gold);transform:translateY(-1px)}
+.abtn-dev{background:rgba(39,174,96,.12);border-color:rgba(39,174,96,.45);color:#5dca8a}
+.abtn-dev:not(:disabled):hover{background:rgba(39,174,96,.26);border-color:#27ae60;transform:translateY(-1px)}
+.abtn-war{background:rgba(192,57,43,.12);border-color:rgba(192,57,43,.45);color:#e06050}
+.abtn-war:not(:disabled):hover{background:rgba(192,57,43,.26);border-color:var(--red);transform:translateY(-1px)}
+.abtn-proj{background:rgba(41,128,185,.12);border-color:rgba(41,128,185,.45);color:#5ba3d0}
+.abtn-proj:not(:disabled):hover{background:rgba(41,128,185,.26);border-color:var(--blue);transform:translateY(-1px)}
+.abtn-next{background:var(--goldbg);border-color:var(--goldd);color:var(--gold)}
+.abtn-next:not(:disabled):hover{background:rgba(201,168,76,.28);border-color:var(--gold);transform:translateY(-1px)}
+.abtn-nr{background:linear-gradient(135deg,rgba(201,168,76,.2),rgba(201,168,76,.35));border-color:var(--gold);color:var(--gold2);font-size:.88rem}
+.abtn-nr:not(:disabled):hover{background:linear-gradient(135deg,rgba(201,168,76,.35),rgba(201,168,76,.5));transform:translateY(-1px)}
+.cp{display:flex;flex-direction:column;overflow:hidden;gap:0}
+.cp-top{padding:18px;display:flex;flex-direction:column;align-items:center;gap:12px;flex-shrink:0}
+.cp-log-wrap{flex:1;display:flex;flex-direction:column;border-top:1px solid var(--border);overflow:hidden;min-height:0}
+.cp-log-hdr{padding:8px 16px;flex-shrink:0}
+.event-log{flex:1;overflow-y:auto;padding:0 16px 12px;display:flex;flex-direction:column;gap:2px}
+.event-slot{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%}
+.ecard{background:var(--card);border:1px solid var(--goldd);border-radius:10px;padding:18px;width:100%;max-width:500px;box-shadow:0 6px 30px rgba(0,0,0,.5),0 0 20px rgba(201,168,76,.08);animation:cardIn .35s ease-out}
+@keyframes cardIn{from{opacity:0;transform:translateY(-8px) scale(.97)}to{opacity:1;transform:none}}
+.ecard-num{font-family:'Jost',sans-serif;font-size:.7rem;color:var(--textd);letter-spacing:.15em;margin-bottom:5px}
+.ecard-name{font-family:'Jost',sans-serif;font-size:1.15rem;font-weight:700;color:var(--gold);margin-bottom:9px}
+.ecard-desc{font-size:.93rem;color:var(--text);line-height:1.5;margin-bottom:11px}
+.ecard-fx{font-size:.82rem;color:var(--textd);background:rgba(0,0,0,.3);border-radius:5px;padding:9px;line-height:1.7}
+.ecard-opt-btn{-webkit-appearance:none;appearance:none;margin-top:10px;padding:7px 16px;font-family:'Jost',sans-serif;font-size:.82rem;background:var(--goldbg);border:1px solid var(--goldd);color:var(--gold);border-radius:5px;cursor:pointer;transition:background .18s}
+.ecard-opt-btn:not(:disabled):hover{background:rgba(201,168,76,.28)}
+.ecard-opt-btn:disabled{opacity:.45;cursor:not-allowed}
+.phase-msg{font-family:'Jost',sans-serif;font-size:.9rem;color:var(--textd);text-align:center;letter-spacing:.06em;padding:12px;border:1px solid var(--border);border-radius:6px;background:var(--card);width:100%;max-width:500px}
+.log-e{padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;line-height:1.45;color:var(--textd)}
+.log-e.lg-round{color:var(--gold);font-family:'Jost',sans-serif;font-size:.75rem;letter-spacing:.1em;padding:5px 0}
+.log-e.lg-event{color:#c9a84c}.log-e.lg-war{color:#e06050}.log-e.lg-war-win{color:#5dca8a}.log-e.lg-war-draw{color:#f0c040}
+.log-e.lg-proj{color:#5ba3d0}.log-e.lg-proj-ok{color:#5dca8a}.log-e.lg-proj-fail{color:#e06050}
+.log-e.lg-dev{color:#5dca8a}.log-e.lg-sys{color:var(--textd);font-style:italic}
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.78);display:flex;align-items:center;justify-content:center;z-index:200;animation:fadeIn .18s}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.mbox{background:var(--card2);border:1px solid var(--goldd);border-radius:11px;padding:26px;max-width:480px;width:90%;box-shadow:0 10px 50px rgba(0,0,0,.85);animation:slideIn .22s ease-out}
+@keyframes slideIn{from{transform:translateY(-18px) scale(.96);opacity:0}to{transform:none;opacity:1}}
+.m-title{font-family:'Jost',sans-serif;font-size:1.2rem;font-weight:700;color:var(--gold);margin-bottom:16px}
+.m-list{display:flex;flex-direction:column;gap:7px;max-height:380px;overflow-y:auto}
+.m-item{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:11px 13px;cursor:pointer;transition:all .15s}
+.m-item:hover{border-color:var(--goldd);background:var(--bg2);transform:translateX(3px)}
+.m-item.mdis{opacity:.38;cursor:not-allowed;transform:none!important}
+.m-item-t{font-family:'Jost',sans-serif;font-size:.88rem;color:var(--text)}
+.m-item-d{font-size:.78rem;color:var(--textd);margin-top:3px;line-height:1.45}
+.m-cancel{-webkit-appearance:none;appearance:none;margin-top:13px;width:100%;padding:9px;font-family:'Jost',sans-serif;font-size:.85rem;background:transparent;border:1px solid var(--border);color:var(--textd);border-radius:5px;cursor:pointer;transition:all .18s}
+.m-cancel:hover{border-color:var(--textd);color:var(--text)}
+#victory{min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:44px 20px 60px;background:radial-gradient(ellipse 70% 30% at 50% 0%,rgba(201,168,76,.22) 0%,transparent 65%),var(--bg)}
+.v-title{font-family:'Jost',sans-serif;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:700;color:var(--gold);text-shadow:0 0 50px rgba(201,168,76,.45);margin-bottom:5px;text-align:center}
+.v-sub{font-family:'Jost',sans-serif;font-size:1.15rem;color:var(--text);text-align:center;margin-bottom:28px}
+.v-cats{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:18px;width:100%;max-width:680px;margin-bottom:24px}
+.v-cats h3{font-family:'Jost',sans-serif;color:var(--gold);font-size:.9rem;margin-bottom:12px;letter-spacing:.08em}
+.v-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:.88rem}
+.v-row:last-child{border:none}.v-cat{color:var(--textd)}
+.v-win{color:var(--gold);font-family:'Jost',sans-serif;font-size:.85rem;text-align:right}
+.v-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:12px;width:100%;max-width:1260px;margin-bottom:28px}
+.v-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px}
+.v-card.vwinner{border-color:var(--gold);box-shadow:0 0 22px rgba(201,168,76,.22)}
+.v-stars{display:flex;gap:3px;margin:7px 0;font-size:1rem}.ve{color:var(--border)}
+.v-stat-row{display:flex;justify-content:space-between;padding:2px 0;font-size:.8rem}.v-stat-l{color:var(--textd)}
+.play-again{-webkit-appearance:none;appearance:none;padding:13px 50px;font-family:'Jost',sans-serif;font-size:1rem;font-weight:700;background:linear-gradient(135deg,var(--goldd),var(--gold));border:none;color:#160f00;border-radius:6px;cursor:pointer;letter-spacing:.1em;transition:all .18s}
+.play-again:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(201,168,76,.4)}
+.hidden{display:none!important}
+@media(max-width:600px){.gbody{grid-template-columns:240px 1fr}.gh .gtitle{display:none}}
 </style>
-
-<!-- Firebase SDK (compat — synchronous global access) -->
 </head>
 <body>
 
-<!-- TITLE SCREEN -->
-<div id="titleScreen" class="screen active">
-  <div class="title-logo">Страны, Армии, Мир</div>
-  <div class="title-sub">Игра для творцов будущего</div>
-  <button class="btn-primary" onclick="showSelect()">Одиночная игра</button>
-  <button class="btn-secondary" onclick="showMultiplayer()" style="margin-top:0.8rem">Мультиплеер</button>
-  <p style="margin-top:1.5rem;color:var(--text-dim);font-size:0.85rem;font-style:italic">© Самир Бектемір, 2026</p>
-</div>
-
-
-<!-- MULTIPLAYER LOBBY SCREEN -->
-<div id="lobbyScreen" class="screen">
-  <div style="max-width:480px;margin:4rem auto;padding:2rem;text-align:center">
-    <div class="title-logo" style="font-size:1.8rem;margin-bottom:0.5rem">Мультиплеер</div>
-    <p style="color:var(--text-dim);margin-bottom:2rem;font-size:0.9rem">До 5 игроков. Один создаёт комнату, остальные подключаются.</p>
-
-    <div id="lobbyCreate" style="margin-bottom:2rem">
-      <input id="playerNameInput" placeholder="Твоё имя" style="width:100%;padding:0.6rem 1rem;background:var(--dark2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:1rem;margin-bottom:0.8rem">
-      <button class="btn-primary" onclick="mpCreateRoom()" style="width:100%;margin-bottom:0.6rem">Создать комнату</button>
-      <div style="display:flex;gap:0.5rem;align-items:center">
-        <input id="joinCodeInput" placeholder="Код комнаты" style="flex:1;padding:0.6rem 1rem;background:var(--dark2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:1rem;text-transform:uppercase">
-        <button class="btn-secondary" onclick="mpJoinRoom()" style="padding:0.6rem 1.2rem">Войти</button>
-      </div>
-    </div>
-
-    <div id="lobbyRoom" style="display:none">
-      <div style="font-size:0.85rem;color:var(--text-dim);margin-bottom:0.4rem">Код комнаты</div>
-      <div id="roomCodeDisplay" style="font-size:2.5rem;font-family:monospace;color:var(--gold);letter-spacing:0.3em;margin-bottom:1rem"></div>
-
-      <div style="margin-bottom:1rem">
-        <div style="font-size:0.8rem;color:var(--text-dim);margin-bottom:0.5rem">Выбери свою страну:</div>
-        <div id="lobbyCountryPicker" style="display:flex;flex-wrap:wrap;gap:0.4rem;max-height:180px;overflow-y:auto"></div>
-        <div id="lobbyMyChoice" style="margin-top:0.5rem;font-size:0.85rem;color:var(--gold)"></div>
-      </div>
-
-      <div id="lobbyPlayerList" style="margin-bottom:1rem;text-align:left"></div>
-      <button class="btn-primary" id="lobbyStartBtn" onclick="mpStartGame()" style="width:100%;display:none">Начать игру</button>
-      <div id="lobbyWaitMsg" style="color:var(--text-dim);font-size:0.85rem">Ожидание игроков…</div>
-    </div>
-
-    <button class="btn-secondary" onclick="switchScreen('titleScreen')" style="margin-top:1rem;width:100%">Назад</button>
+<!-- ══ TITLE ══ -->
+<div id="titleScreen">
+  <h1 class="lobby-title">Страны, Армии, Мир</h1>
+  <div class="lobby-sub">Стратегическая игра · 10 раундов · 6 держав</div>
+  <div class="gold-line"></div>
+  <div class="ts-row">
+    <button class="ts-btn" id="btnSP">Одиночная игра</button>
+    <button class="ts-btn ts-mp" id="btnMP">🌐 Мультиплеер</button>
   </div>
 </div>
 
-<!-- SELECT SCREEN -->
-<div id="selectScreen" class="screen">
-  <div style="max-width:1100px;margin:0 auto;padding:2rem 1rem">
-    <div class="select-title">Выбери свою страну</div>
-    <div class="select-sub">Каждая страна имеет свои сильные и слабые стороны. Выбирай мудро!</div>
-    <div class="countries-grid" id="countriesGrid"></div>
-    <div style="text-align:center">
-      <div id="selectMpNote" style="display:none;color:var(--gold);font-size:0.9rem;margin-bottom:0.8rem;text-align:center"></div>
-      <button class="btn-primary" id="startBtn" onclick="startGame()" style="opacity:0.4;pointer-events:none">Начать игру</button>
+<!-- ══ MP SETUP ══ -->
+<div id="mpSetup" class="hidden">
+  <h1 class="lobby-title" style="font-size:2rem">Мультиплеер</h1>
+  <div class="gold-line"></div>
+  <div class="mp-form">
+    <input class="mp-input" id="mpName" type="text" placeholder="Ваше имя" maxlength="20">
+    <button class="start-btn" id="btnCreate" style="margin-top:0;padding:11px 36px">Создать комнату</button>
+    <div class="mp-or">— или —</div>
+    <div class="mp-join-row">
+      <input class="mp-input" id="mpCodeInput" type="text" placeholder="Код (4 символа)" maxlength="4">
+      <button class="start-btn" id="btnJoin" style="margin-top:0;padding:11px 24px">Войти</button>
+    </div>
+    <div class="mp-err" id="mpErr"></div>
+    <button class="mp-back" id="btnBackTitle">← На главную</button>
+  </div>
+</div>
+
+<!-- ══ MP WAITING ROOM ══ -->
+<div id="mpRoom" class="hidden" style="display:flex;flex-direction:column;min-height:100vh">
+  <div class="mp-room-header">
+    <span class="mp-code-label">Код комнаты</span>
+    <span class="mp-code" id="mpRoomCode">----</span>
+    <span class="mp-room-sub" id="mpRoomSub">Ожидание игроков…</span>
+  </div>
+  <div class="mp-room-body" style="flex:1">
+    <div class="mp-players-col">
+      <div class="panel-hdr">Игроки</div>
+      <div id="mpPlayerList" style="display:flex;flex-direction:column;gap:7px;margin-top:8px"></div>
+    </div>
+    <div class="mp-countries-col">
+      <div class="panel-hdr" style="margin-bottom:14px">Выберите страну</div>
+      <div class="cg" id="mpCountryGrid"></div>
+    </div>
+  </div>
+  <div class="mp-room-foot">
+    <button class="start-btn hidden" id="btnStartMP" style="margin-top:0">Начать игру</button>
+    <div id="mpWaitMsg" style="font-family:Jost,sans-serif;font-size:.88rem;color:var(--textd);letter-spacing:.06em">
+      Ожидание хоста…
     </div>
   </div>
 </div>
 
-<!-- GAME SCREEN -->
-<div id="gameScreen" class="screen">
-  <div class="game-header">
-    <div>
-      <div class="round-info">Раунд <span id="roundNum">1</span> / 8</div>
-      <div class="phase-info" id="phaseInfo">Нажми «Событие» чтобы начать раунд</div>
-    </div>
-    <div id="turnBadge" class="turn-indicator">Твой ход</div>
+<!-- ══ SP LOBBY ══ -->
+<div id="lobby" class="hidden">
+  <h1 class="lobby-title">Страны, Армии, Мир</h1>
+  <div class="lobby-sub">Стратегическая игра · 10 раундов · 6 держав</div>
+  <div class="gold-line"></div>
+  <div class="lobby-prompt">Выберите свою страну</div>
+  <div class="cg" id="countryGrid"></div>
+  <button class="start-btn" id="startBtn" disabled>Начать игру</button>
+</div>
+
+<!-- ══ GAME ══ -->
+<div id="game" class="hidden">
+  <div class="gh">
+    <span class="gtitle">Страны, Армии, Мир</span>
+    <span class="round-tag" id="roundTag">Раунд 1 / 10</span>
+    <span class="phase-tag" id="phaseTag">Ход</span>
+    <span class="peace-tag" id="peaceTag">☮ Олимпийское перемирие</span>
   </div>
-
-  <div class="game-layout">
-    <div class="countries-area">
-      <!-- Player country -->
-      <div class="player-country-card" id="playerCard"></div>
-      <!-- AI countries -->
-      <div class="ai-countries-row" id="aiCountriesRow"></div>
-    </div>
-
-    <div class="right-panel">
-      <!-- Event card -->
-      <div class="panel-card">
-        <div class="panel-title">Мировое событие</div>
-        <div class="event-card" id="eventCard">
-          <div class="event-icon">🎴</div>
-          <div class="event-name" id="eventName">—</div>
-          <div class="event-desc" id="eventDesc">Нажми кнопку ниже чтобы открыть карточку</div>
-        </div>
-        <button class="btn-primary" id="drawEventBtn" onclick="drawEvent()" style="width:100%;margin-top:0.8rem">
-          Открыть событие
-        </button>
-        <div id="mpWaitBanner" style="display:none;text-align:center;padding:0.6rem;color:var(--text-dim);font-size:0.85rem;margin-top:0.5rem"></div>
+  <div class="ai-strip" id="aiCards"></div>
+  <div class="gbody">
+    <div class="lp">
+      <div class="panel-hdr">Ваша страна</div>
+      <div class="player-card" id="playerCard"></div>
+      <div class="panel-hdr" style="margin-top:6px">Торговля (1 раз за ход)</div>
+      <div class="ac-section">
+        <button class="abtn abtn-dev"  id="btnImp"  disabled>📥 Импорт: обменяй экономику на другой параметр</button>
+        <button class="abtn abtn-proj" id="btnExp"  disabled>📤 Экспорт: обменяй любой параметр на экономику</button>
+        <div class="panel-hdr" style="margin-top:4px">Действия (1 раз за ход)</div>
+        <button class="abtn abtn-war"  id="btnWar"  disabled>⚔ Объявить войну</button>
+        <button class="abtn abtn-proj" id="btnProj" disabled>🏗 Смелый проект</button>
+        <button class="abtn abtn-next" id="btnEnd"  disabled>▶ Завершить ход</button>
+        <button class="abtn abtn-nr"   id="btnNR"   style="display:none">▶ Следующий раунд</button>
       </div>
-
-      <!-- Actions -->
-      <div class="panel-card">
-        <div class="panel-title">Твои действия</div>
-        <div class="action-buttons">
-          <button class="action-btn" id="developBtn" onclick="openDevelop()" disabled>
-            <span class="action-icon">⚙️</span>
-            <span>Развитие (-1 экономики, +1 к чему-то)</span>
-          </button>
-          <button class="action-btn" id="warBtn" onclick="openWar()" disabled>
-            <span class="action-icon">⚔️</span>
-            <span>Объявить войну</span>
-          </button>
-          <button class="action-btn" id="projectBtn" onclick="openProjects()" disabled>
-            <span class="action-icon">🚀</span>
-            <span>Смелый проект</span>
-          </button>
-          <button class="action-btn" id="passBtn" onclick="playerPass()" disabled>
-            <span class="action-icon">▶️</span>
-            <span>Дальше</span>
-          </button>
+    </div>
+    <div class="cp">
+      <div class="cp-top">
+        <div class="event-slot" id="eventSlot">
+          <div class="phase-msg" id="phaseMsg">Загрузка…</div>
+          <div id="eventCard"></div>
         </div>
       </div>
-
-      <!-- Log -->
-      <div class="panel-card">
-        <div class="panel-title">Журнал событий</div>
-        <div class="game-log" id="gameLog"></div>
+      <div class="cp-log-wrap">
+        <div class="cp-log-hdr panel-hdr">Журнал</div>
+        <div class="event-log" id="eventLog"></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- RESULTS SCREEN -->
-<div id="resultsScreen" class="screen">
-  <div class="results-title">Итоги игры</div>
-  <div class="results-sub">10 раундов позади. Посмотрим, кто стал великой державой.</div>
-  <div class="final-winner" id="finalWinner"></div>
-  <div class="all-scores" id="allScores"></div>
-  <div class="category-list" id="categoryList"></div>
-  <div style="text-align:center">
-    <button class="btn-primary" onclick="location.reload()">Играть снова</button>
+<!-- ══ VICTORY ══ -->
+<div id="victory" class="hidden"></div>
+
+<!-- ══ MODALS ══ -->
+<div class="mo hidden" id="modalOverlay">
+  <div class="mbox">
+    <div class="m-title" id="mTitle"></div>
+    <div class="m-list" id="mList"></div>
+    <button class="m-cancel" id="mCancel">Отмена</button>
   </div>
 </div>
-
-<!-- MODAL -->
-<div class="modal-overlay" id="modalOverlay">
-  <div class="modal" id="modal">
-    <div class="modal-title" id="modalTitle"></div>
-    <div id="modalBody"></div>
-    <div class="modal-buttons" id="modalButtons"></div>
+<div class="mo hidden" id="warModal">
+  <div class="mbox" style="max-width:520px;width:94%">
+    <div class="m-title">⚔ Дипломатическая подготовка</div>
+    <div id="wm-info"></div>
+    <div style="font-family:Jost,sans-serif;font-size:.72rem;color:var(--textd);letter-spacing:.13em;text-transform:uppercase;margin:13px 0 6px;padding-top:10px;border-top:1px solid var(--border)">Запросить союзников</div>
+    <div id="wm-allies" style="display:flex;flex-direction:column;gap:6px;max-height:260px;overflow-y:auto"></div>
+    <div id="wm-tally" style="margin-top:11px;padding:9px;background:rgba(0,0,0,.3);border-radius:5px;font-size:.82rem;line-height:1.7"></div>
+    <div style="display:flex;gap:8px;margin-top:13px">
+      <button id="wm-attack" class="abtn abtn-war" style="flex:1">⚔ Атаковать</button>
+      <button id="wm-cancel-war" class="m-cancel" style="margin:0;flex:0 0 90px">Отмена</button>
+    </div>
   </div>
 </div>
 
 <script>
-// ─── DATA ───────────────────────────────────────────────────────────────────
+/* ════════════════════════════════════════════════════
+   GAME DATA
+════════════════════════════════════════════════════ */
+const CD=[
+  {id:'usa',name:'США',flag:'🇺🇸',R:6,S:8,H:4,A:8,E:8},
+  {id:'china',name:'Китай',flag:'🇨🇳',R:7,S:8,H:3,A:8,E:8},
+  {id:'turkey',name:'Турция',flag:'🇹🇷',R:6,S:5,H:5,A:7,E:7},
+  {id:'uk',name:'Великобритания',flag:'🇬🇧',R:4,S:7,H:6,A:7,E:7},
+  {id:'germany',name:'Германия',flag:'🇩🇪',R:5,S:7,H:7,A:6,E:8},
+  {id:'france',name:'Франция',flag:'🇫🇷',R:4,S:7,H:7,A:6,E:6},
+  {id:'japan',name:'Япония',flag:'🇯🇵',R:4,S:8,H:7,A:6,E:7},
+  {id:'india',name:'Индия',flag:'🇮🇳',R:6,S:6,H:5,A:6,E:6},
+  {id:'saudi',name:'Саудовская Аравия',flag:'🇸🇦',R:9,S:4,H:4,A:6,E:6},
+  {id:'kazakh',name:'Казахстан',flag:'🇰🇿',R:7,S:6,H:6,A:5,E:5},
+  {id:'swiss',name:'Швейцария',flag:'🇨🇭',R:4,S:7,H:8,A:5,E:8},
+  {id:'brazil',name:'Бразилия',flag:'🇧🇷',R:8,S:6,H:6,A:6,E:6},
+  {id:'norway',name:'Норвегия',flag:'🇳🇴',R:8,S:8,H:9,A:4,E:8},
+  {id:'nigeria',name:'Нигерия',flag:'🇳🇬',R:8,S:4,H:4,A:7,E:6},
+  {id:'aus',name:'Австралия',flag:'🇦🇺',R:8,S:7,H:8,A:4,E:7},
+  {id:'safrica',name:'ЮАР',flag:'🇿🇦',R:8,S:5,H:3,A:6,E:5},
+  {id:'nkorea',name:'Северная Корея',flag:'🇰🇵',R:3,S:3,H:3,A:6,E:3},
+  {id:'denmark',name:'Дания',flag:'🇩🇰',R:7,S:6,H:8,A:4,E:7},
+];
+const SI={
+  R:{icon:'🌳',name:'Ресурсы',col:'#5dca8a'},
+  S:{icon:'📚',name:'Наука',col:'#5ba3d0'},
+  H:{icon:'🙂',name:'Счастье',col:'#f0c040'},
+  A:{icon:'⚔️',name:'Армия',col:'#e06050'},
+  E:{icon:'💰',name:'Экономика',col:'#c9a84c'},
+};
 
-const COUNTRIES = [
-  { id:'usa', flag:'🇺🇸', name:'США', desc:'Супердержава с большим неравенством', R:6,S:8,H:4,A:8,E:8 },
-  { id:'chn', flag:'🇨🇳', name:'Китай', desc:'Сильная армия, ограниченные свободы', R:7,S:8,H:3,A:8,E:8 },
-  { id:'tur', flag:'🇹🇷', name:'Турция', desc:'На перекрёстке Европы и Азии', R:6,S:5,H:5,A:7,E:7 },
-  { id:'gbr', flag:'🇬🇧', name:'Великобритания', desc:'Старая империя, мало ресурсов', R:4,S:7,H:6,A:7,E:7 },
-  { id:'deu', flag:'🇩🇪', name:'Германия', desc:'Сильная экономика, промышленная держава', R:5,S:7,H:7,A:6,E:8 },
-  { id:'fra', flag:'🇫🇷', name:'Франция', desc:'Сбалансированная страна', R:4,S:7,H:7,A:6,E:6 },
-  { id:'jpn', flag:'🇯🇵', name:'Япония', desc:'Технологии, растущая армия', R:4,S:8,H:7,A:6,E:7 },
-  { id:'ind', flag:'🇮🇳', name:'Индия', desc:'Большая страна, трудная жизнь', R:6,S:6,H:5,A:6,E:6 },
-  { id:'sau', flag:'🇸🇦', name:'Саудовская Аравия', desc:'Нефтяная держава', R:9,S:4,H:4,A:6,E:6 },
-  { id:'kaz', flag:'🇰🇿', name:'Казахстан', desc:'Богатые ресурсы, растущая страна', R:7,S:6,H:6,A:5,E:5 },
-  { id:'che', flag:'🇨🇭', name:'Швейцария', desc:'Счастье и нейтралитет', R:4,S:7,H:8,A:5,E:8 },
-  { id:'bra', flag:'🇧🇷', name:'Бразилия', desc:'Ресурсы и весёлый народ', R:8,S:6,H:6,A:6,E:6 },
-  { id:'nor', flag:'🇳🇴', name:'Норвегия', desc:'Нефть, наука и счастье', R:8,S:8,H:9,A:4,E:8 },
-  { id:'nga', flag:'🇳🇬', name:'Нигерия', desc:'Крупнейшая экономика Африки', R:8,S:4,H:4,A:7,E:6 },
-  { id:'aus', flag:'🇦🇺', name:'Австралия', desc:'Богатые недра, высокое качество жизни', R:8,S:7,H:8,A:4,E:7 },
-  { id:'zaf', flag:'🇿🇦', name:'ЮАР', desc:'Золото и алмазы, высокое неравенство', R:8,S:5,H:3,A:6,E:5 },
-  { id:'prk', flag:'🇰🇵', name:'КНДР', desc:'Изолированное государство с мощной армией', R:3,S:3,H:3,A:6,E:3 },
-  { id:'dnk', flag:'🇩🇰', name:'Дания', desc:'Гренландские ресурсы, высокое счастье, открытое общество', R:7,S:6,H:8,A:4,E:7 },
+const EVENTS=[
+  {id:1,name:'Глобальный финансовый кризис',desc:'Глобальная рецессия ударяет по всем экономикам.',fx:'Все: Экономика−1, Счастье−1; если Армия>7: ещё Экономика−1',apply(c){c.E=cl(c.E-1);c.H=cl(c.H-1);if(c.A>7)c.E=cl(c.E-1);}},
+  {id:2,name:'Фестиваль культуры',desc:'Международный культурный обмен сближает народы.',fx:'Если Счастье>6: Наука+1',apply(c){if(c.H>6)c.S=cl(c.S+1);}},
+  {id:3,name:'Нефтяной картель',desc:'Крупнейшие производители нефти сокращают добычу.',fx:'Если Ресурсы>7: Экономика+2, Счастье+1',apply(c){if(c.R>7){c.E=cl(c.E+2);c.H=cl(c.H+1);}}},
+  {id:4,name:'Демократизация',desc:'Движения за гражданские свободы охватывают планету.',fx:'Если Счастье>7: Наука+1, Экономика+1; если Счастье<4: Армия−1',apply(c){if(c.H>7){c.S=cl(c.S+1);c.E=cl(c.E+1);}if(c.H<4)c.A=cl(c.A-1);}},
+  {id:5,name:'Школьная реформа',desc:'Возможность провести масштабную реформу образования.',fx:'Добровольно: Экономика−1 → Наука+2',optional:true,optLabel:'Провести реформу (Экономика−1 → Наука+2)',optApply(c){c.E=cl(c.E-1);c.S=cl(c.S+2);},aiTake(c){return c.E>=3&&c.S<=7;},apply(c){}},
+  {id:6,name:'Энергетическая революция',desc:'Прорыв в возобновляемой энергетике.',fx:'Если Наука>6: Ресурсы+1, Экономика+1',apply(c){if(c.S>6){c.R=cl(c.R+1);c.E=cl(c.E+1);}}},
+  {id:7,name:'Региональный конфликт',desc:'Военная нестабильность влияет на торговые потоки.',fx:'Если Армия>6: Счастье−1; если Счастье>5: Экономика+1',apply(c){if(c.A>6)c.H=cl(c.H-1);if(c.H>5)c.E=cl(c.E+1);}},
+  {id:8,name:'Бегство богатства',desc:'Инвесторы выводят активы из нестабильных стран.',fx:'Если Счастье<6: Экономика−1',apply(c){if(c.H<6)c.E=cl(c.E-1);}},
+  {id:9,name:'Утечка мозгов',desc:'Лучшие умы покидают страны с низким уровнем жизни.',fx:'Если Наука>7 и Счастье<5: Наука−1',apply(c){if(c.S>7&&c.H<5)c.S=cl(c.S-1);}},
+  {id:10,name:'Роботизация',desc:'Автоматизация труда преобразует промышленность.',fx:'Если Наука>6: Экономика+2',apply(c){if(c.S>6)c.E=cl(c.E+2);}},
+  {id:11,name:'Пандемия',desc:'Распространение болезни несёт экономические потери.',fx:'Если Наука<7: Экономика−1, Счастье−1; если Армия>7: Счастье−1',apply(c){if(c.S<7){c.E=cl(c.E-1);c.H=cl(c.H-1);}if(c.A>7)c.H=cl(c.H-1);}},
+  {id:12,name:'Дефицит ресурсов',desc:'Нехватка природного сырья.',fx:'Если Ресурсы<4: Экономика−2',apply(c){if(c.R<4)c.E=cl(c.E-2);}},
+  {id:13,name:'Энергетический кризис',desc:'Рост цен на энергоносители.',fx:'Если Ресурсы<5: Экономика−2; если Ресурсы>7: Экономика+1',apply(c){if(c.R<5)c.E=cl(c.E-2);else if(c.R>7)c.E=cl(c.E+1);}},
+  {id:14,name:'Мода на здоровье',desc:'Массовое увлечение здоровым образом жизни.',fx:'Все: Счастье+1',apply(c){c.H=cl(c.H+1);}},
+  {id:15,name:'Международная помощь',desc:'Глобальные фонды перераспределяют ресурсы.',fx:'Если Экономика<6: Экономика+2; если Экономика>10: Экономика−1',apply(c){if(c.E<6)c.E=cl(c.E+2);else if(c.E>10)c.E=cl(c.E-1);}},
+  {id:16,name:'Зелёная энергия',desc:'Инвестиционный бум в возобновляемые источники.',fx:'Если Ресурсы>6 и Наука>6: Счастье+1, Экономика+1',apply(c){if(c.R>6&&c.S>6){c.H=cl(c.H+1);c.E=cl(c.E+1);}}},
+  {id:17,name:'Искусственный интеллект',desc:'Технологический прорыв в области ИИ.',fx:'Если Наука>7: Счастье+2, Экономика+1',apply(c){if(c.S>7){c.H=cl(c.H+2);c.E=cl(c.E+1);}}},
+  {id:18,name:'Глобальное потепление',desc:'Климатические изменения давят на ресурсную базу.',fx:'Все: Ресурсы−1',apply(c){c.R=cl(c.R-1);}},
+  {id:19,name:'Торговые санкции',desc:'Новые барьеры разрывают цепочки поставок.',fx:'Если Армия>6: Экономика−1; если Наука>6: Экономика+1',apply(c){if(c.A>6)c.E=cl(c.E-1);if(c.S>6)c.E=cl(c.E+1);}},
+  {id:20,name:'Новый Шёлковый путь',desc:'Масштабные инфраструктурные инвестиции.',fx:'Если Экономика>6: Наука+1',apply(c){if(c.E>6)c.S=cl(c.S+1);}},
+  {id:21,name:'Олимпиада',desc:'Мировой праздник спорта объединяет народы.',fx:'Если Счастье>6: Экономика+1; войны запрещены',olympicsPeace:true,apply(c){if(c.H>6)c.E=cl(c.E+1);}},
+  {id:22,name:'Пожары и засуха',desc:'Природные катастрофы опустошают ресурсную базу.',fx:'Все: Ресурсы−1; если упало до <6: Счастье−1',apply(c){const p=c.R;c.R=cl(c.R-1);if(p>=6&&c.R<6)c.H=cl(c.H-1);}},
+  {id:23,name:'Высокая миграция',desc:'Массовые потоки людей перекраивают демографию.',fx:'Если Счастье>6: Экономика+1; если Счастье<6: Экономика−1',apply(c){if(c.H>6)c.E=cl(c.E+1);else if(c.H<6)c.E=cl(c.E-1);}},
+  {id:24,name:'Отличный урожай',desc:'Благоприятный сезон.',fx:'Если Ресурсы>6: Счастье+1, Экономика+1',apply(c){if(c.R>6){c.H=cl(c.H+1);c.E=cl(c.E+1);}}},
+  {id:25,name:'Глобальное сотрудничество',desc:'Страны объединяются ради науки.',fx:'Если Наука>6: Ресурсы+1',apply(c){if(c.S>6)c.R=cl(c.R+1);}},
+  {id:26,name:'Демографический кризис',desc:'Старение населения создаёт давление.',fx:'Если Счастье<5: Армия−1, Экономика−1',apply(c){if(c.H<5){c.A=cl(c.A-1);c.E=cl(c.E-1);}}},
+  {id:27,name:'Разведка недр',desc:'Новые месторождения.',fx:'Все: Ресурсы+1',apply(c){c.R=cl(c.R+1);}},
+  {id:28,name:'Экономический бум',desc:'Мировая экономика переживает подъём.',fx:'Если Экономика≥7: Экономика+1',apply(c){if(c.E>=7)c.E=cl(c.E+1);}},
+  {id:29,name:'Социальный договор',desc:'Новый консенсус между властью и обществом.',fx:'Если Счастье≥7: Экономика+1, Наука+1',apply(c){if(c.H>=7){c.E=cl(c.E+1);c.S=cl(c.S+1);}}},
+  {id:30,name:'Потребительский бум',desc:'Рост доходов стимулирует спрос.',fx:'Если Экономика≥7: Счастье+1',apply(c){if(c.E>=7)c.H=cl(c.H+1);}},
+  {id:31,name:'Эра соцсетей',desc:'Цифровая революция меняет общество.',fx:'Все: Экономика+1, Наука−1',apply(c){c.E=cl(c.E+1);c.S=cl(c.S-1);}},
+  {id:32,name:'Гонка вооружений',desc:'Мировые державы наращивают военные расходы.',fx:'Все: Армия+1, Экономика−1',apply(c){c.A=cl(c.A+1);c.E=cl(c.E-1);}},
 ];
 
-const EVENTS = [
-  { icon:'📉', name:'Глобальный финансовый кризис', desc:'Банки рушатся, люди теряют работу',
-    apply: s => { let r=['E−1','H−1']; s.E=Math.max(0,s.E-1); s.H=Math.max(0,s.H-1); if(s.A>7){s.E=Math.max(0,s.E-1);r.push('E−1(армия)');} return r; } },
-  { icon:'🎨', name:'Фестиваль культуры', desc:'Довольные люди учатся лучше',
-    apply: s => { if(s.H>6){s.S=Math.min(12,s.S+1);return['N+1'];}return[]; } },
-  { icon:'🛢️', name:'Нефтяной картель', desc:'Ресурсные державы контролируют рынок и богатеют',
-    apply: s => { if(s.R>7){s.E=Math.min(12,s.E+2);s.H=Math.min(12,s.H+1);return['E+2','H+1'];}return[]; } },
-  { icon:'🗳️', name:'Демократизация', desc:'Открытые общества процветают. Репрессии порождают нестабильность',
-    apply: s => { let r=[]; if(s.H>7){s.S=Math.min(12,s.S+1);s.E=Math.min(12,s.E+1);r.push('N+1','E+1');} if(s.H<4){s.A=Math.max(0,s.A-1);r.push('A−1');} return r; } },
-  { icon:'🏫', name:'Школьная реформа', desc:'Инвестиции в образование',
-    apply: (s, isPlayer) => { /* special: optional spend */ return ['optional']; } },
-  { icon:'⚡', name:'Энергетическая революция', desc:'Новые источники энергии помогают расти',
-    apply: s => { if(s.S>6){s.R=Math.min(12,s.R+1);s.E=Math.min(12,s.E+1);return['R+1','E+1'];}return[]; } },
-  { icon:'💥', name:'Региональный конфликт', desc:'Сильные армии богатеют, но люди страдают',
-    apply: s => { if(s.A>6){s.H=Math.max(0,s.H-1); if(s.H>5){s.E=Math.min(12,s.E+1);return['E+1','H−1'];} return['H−1'];} return[]; } },
-  { icon:'✈️', name:'Бегство богатства', desc:'Несчастные граждане увозят деньги',
-    apply: s => { if(s.H<6){s.E=Math.max(0,s.E-1);return['E−1'];}return[]; } },
-  { icon:'🧠', name:'Утечка мозгов', desc:'Таланты бегут из несчастливых стран, даже умных',
-    apply: s => { if(s.S>7&&s.H<5){s.S=Math.max(0,s.S-1);return['N−1'];}return[]; } },
-  { icon:'🤖', name:'Роботизация', desc:'Заводы автоматизируются, экономика растёт',
-    apply: s => { if(s.S>6){s.E=Math.min(12,s.E+2);return['E+2'];}return[]; } },
-  { icon:'🦠', name:'Пандемия', desc:'Болезнь охватывает мир. Наука — единственная защита',
-    apply: s => { let r=[]; if(s.S<7){s.E=Math.max(0,s.E-1);s.H=Math.max(0,s.H-1);r.push('E−1','H−1');} if(s.A>7){s.H=Math.max(0,s.H-1);r.push('H−1(армия)');} return r; } },
-  { icon:'⚠️', name:'Дефицит ресурсов', desc:'Нехватка сырья бьёт по бедным странам',
-    apply: s => { if(s.R<4){s.E=Math.max(0,s.E-2);return['E−2'];}return[]; } },
-  { icon:'⚡', name:'Энергетический кризис', desc:'Бедные ресурсами страдают. Богатые наживаются',
-    apply: s => { let r=[]; if(s.R<5){s.E=Math.max(0,s.E-2);r.push('E−2');} if(s.R>7){s.E=Math.min(12,s.E+1);r.push('E+1');} return r; } },
-  { icon:'💪', name:'Мода на здоровье', desc:'Спорт и питание улучшают жизнь везде',
-    apply: s => { s.H=Math.min(12,s.H+1); return['H+1']; } },
-  { icon:'🤝', name:'Международная помощь', desc:'Богатые помогают бедным',
-    apply: s => { let r=[]; if(s.E<6){s.E=Math.min(12,s.E+2);r.push('E+2');} else if(s.E>10){s.E=Math.max(0,s.E-1);r.push('E−1');} return r; } },
-  { icon:'🌱', name:'Зелёная энергия', desc:'Наука и ресурсы вместе дают выгоду',
-    apply: s => { if(s.R>6&&s.S>6){s.H=Math.min(12,s.H+1);s.E=Math.min(12,s.E+1);return['H+1','E+1'];}return[]; } },
-  { icon:'🧠', name:'Искусственный интеллект', desc:'ИИ помогает умным странам',
-    apply: s => { if(s.S>7){s.H=Math.min(12,s.H+2);s.E=Math.min(12,s.E+1);return['H+2','E+1'];}return[]; } },
-  { icon:'🌡️', name:'Глобальное потепление', desc:'Климат меняется — ресурсы тают',
-    apply: s => { s.R=Math.max(0,s.R-1); return['R−1']; } },
-  { icon:'🚫', name:'Торговые санкции', desc:'Сильные армии теряют партнёров. Технологии открывают новые рынки',
-    apply: s => { let r=[]; if(s.A>6){s.E=Math.max(0,s.E-1);r.push('E−1');} if(s.S>6){s.E=Math.min(12,s.E+1);r.push('E+1');} return r; } },
-  { icon:'🛤️', name:'Новый Шёлковый путь', desc:'Дороги и связь объединяют мир',
-    apply: s => { if(s.E>6){s.S=Math.min(12,s.S+1);return['N+1'];}return[]; } },
-  { icon:'🏟️', name:'Олимпиада', desc:'Большой праздник спорта. Войн нет!',
-    apply: s => { if(s.H>6){s.E=Math.min(12,s.E+1);return['E+1','🚫война'];}return['🚫война']; },
-    noWar: true },
-  { icon:'🔥', name:'Пожары и засуха', desc:'Стихия губит природу и урожай',
-    apply: s => { let hadEnough=s.R>=6; s.R=Math.max(0,s.R-1); let r=['R−1']; if(hadEnough&&s.R<6){s.H=Math.max(0,s.H-1);r.push('H−1');} return r; } },
-  { icon:'🌍', name:'Высокая миграция', desc:'Счастливые страны привлекают людей',
-    apply: s => { if(s.H>6){s.E=Math.min(12,s.E+1);return['E+1'];} else if(s.H<6){s.E=Math.max(0,s.E-1);return['E−1'];} return[]; } },
-  { icon:'🌾', name:'Отличный урожай', desc:'Плодородные поля радуют всех',
-    apply: s => { if(s.R>6){s.H=Math.min(12,s.H+1);s.E=Math.min(12,s.E+1);return['H+1','E+1'];}return[]; } },
-  { icon:'🌐', name:'Глобальное сотрудничество', desc:'Технологии открывают новые месторождения',
-    apply: s => { if(s.S>6){s.R=Math.min(12,s.R+1);return['R+1'];}return[]; } },
-  { icon:'👶', name:'Демографический кризис', desc:'Недовольные общества теряют людей и силу',
-    apply: s => { let r=[]; if(s.H<5){s.A=Math.max(0,s.A-1);s.E=Math.max(0,s.E-1);r.push('A−1','E−1');} return r; } },
-  { icon:'🗺️', name:'Разведка недр', desc:'Геологи находят новые запасы по всему миру',
-    apply: s => { s.R=Math.min(12,s.R+1); return['R+1']; } },
-  { icon:'💰', name:'Экономический бум', desc:'Богатые страны растут ещё быстрее',
-    apply: s => { if(s.E>=7){s.E=Math.min(12,s.E+1);return['E+1'];}return[]; } },
-  { icon:'🤲', name:'Социальный договор', desc:'Счастливые общества богатеют и учатся',
-    apply: s => { if(s.H>=7){s.E=Math.min(12,s.E+1);s.S=Math.min(12,s.S+1);return['E+1','N+1'];}return[]; } },
-  { icon:'🏪', name:'Потребительский бум', desc:'Богатство порождает счастье',
-    apply: s => { if(s.E>=7){s.H=Math.min(12,s.H+1);return['H+1'];}return[]; } },
-  { icon:'📱', name:'Эра соцсетей', desc:'Цифровая экономика взрывается, но молодёжь отвлекается от учёбы',
-    apply: s => { s.E=Math.min(12,s.E+1); s.S=Math.max(0,s.S-1); return['E+1','S−1']; } },
-  { icon:'⚔️', name:'Гонка вооружений', desc:'Страны наращивают военные бюджеты. Безопасность растёт, экономика страдает',
-    apply: s => { s.A=Math.min(12,s.A+1); s.E=Math.max(0,s.E-1); return['A+1','E−1']; } },
+const PROJECTS=[
+  {id:1,name:'Ядерная программа',req:null,sd:'Армия+2, Наука+1, Экономика+1',fd:'Счастье−3, Экономика−1',ok(c){c.A=cl(c.A+2);c.S=cl(c.S+1);c.E=cl(c.E+1);},fail(c){c.H=cl(c.H-3);c.E=cl(c.E-1);}},
+  {id:2,name:'Космическая гонка',req:null,sd:'Наука+1, Счастье+2',fd:'Ресурсы−2, Экономика−1',ok(c){c.S=cl(c.S+1);c.H=cl(c.H+2);},fail(c){c.R=cl(c.R-2);c.E=cl(c.E-1);}},
+  {id:3,name:'Международный финансовый центр',req:null,sd:'Экономика+2, Наука+1',fd:'Экономика−2',ok(c){c.E=cl(c.E+2);c.S=cl(c.S+1);},fail(c){c.E=cl(c.E-2);}},
+  {id:4,name:'Зелёный переход',req:null,sd:'Ресурсы+2, Наука+1, Экономика+1',fd:'Ресурсы−1, Экономика−1',ok(c){c.R=cl(c.R+2);c.S=cl(c.S+1);c.E=cl(c.E+1);},fail(c){c.R=cl(c.R-1);c.E=cl(c.E-1);}},
+  {id:5,name:'Чемпионат мира по футболу',req:null,sd:'Счастье+2, Экономика+1',fd:'Экономика−2',ok(c){c.H=cl(c.H+2);c.E=cl(c.E+1);},fail(c){c.E=cl(c.E-2);}},
+  {id:6,name:'Научный мегапроект',req:null,sd:'Наука+2, Экономика+1',fd:'Экономика−2',ok(c){c.S=cl(c.S+2);c.E=cl(c.E+1);},fail(c){c.E=cl(c.E-2);}},
+  {id:7,name:'Национальный парк',req:null,sd:'Ресурсы+1, Счастье+2',fd:'Экономика−1',ok(c){c.R=cl(c.R+1);c.H=cl(c.H+2);},fail(c){c.E=cl(c.E-1);}},
+  {id:8,name:'Поиск новых месторождений',req:null,sd:'Ресурсы+2, Экономика+2',fd:'Ресурсы−1, Экономика−1',ok(c){c.R=cl(c.R+2);c.E=cl(c.E+2);},fail(c){c.R=cl(c.R-1);c.E=cl(c.E-1);}},
+  {id:9,name:'Высокоскоростная железная дорога',req:null,sd:'Экономика+2, Счастье+1',fd:'Экономика−1',ok(c){c.E=cl(c.E+2);c.H=cl(c.H+1);},fail(c){c.E=cl(c.E-1);}},
+  {id:10,name:'Университет будущего',req:null,sd:'Счастье+1, Наука+1, Экономика+1',fd:'Экономика−1',ok(c){c.H=cl(c.H+1);c.S=cl(c.S+1);c.E=cl(c.E+1);},fail(c){c.E=cl(c.E-1);}},
+  {id:11,name:'Нефтяной суверенный фонд',req:(c)=>c.R>=7,reqTxt:'требуется Ресурсы≥7',sd:'Экономика+2',fd:'Ресурсы−2, Экономика−1',ok(c){c.E=cl(c.E+2);},fail(c){c.R=cl(c.R-2);c.E=cl(c.E-1);}},
+  {id:12,name:'Оборонная промышленность',req:null,sd:'Армия+2, Экономика+1',fd:'Ресурсы−2, Экономика−1',ok(c){c.A=cl(c.A+2);c.E=cl(c.E+1);},fail(c){c.R=cl(c.R-2);c.E=cl(c.E-1);}},
+  {id:13,name:'Кибервойска',req:(c)=>c.S>=6,reqTxt:'требуется Наука≥6',sd:'Армия+2, Наука+1',fd:'Экономика−2, Счастье−1',ok(c){c.A=cl(c.A+2);c.S=cl(c.S+1);},fail(c){c.E=cl(c.E-2);c.H=cl(c.H-1);}},
+  {id:14,name:'Умный город',req:null,sd:'Ресурсы+1, Наука+1, Счастье+1, Экономика+1',fd:'Экономика−2',ok(c){c.R=cl(c.R+1);c.S=cl(c.S+1);c.H=cl(c.H+1);c.E=cl(c.E+1);},fail(c){c.E=cl(c.E-2);}},
+  {id:15,name:'Привлечение талантов',req:null,sd:'Наука+2, Счастье+1',fd:'Экономика−2',ok(c){c.S=cl(c.S+2);c.H=cl(c.H+1);},fail(c){c.E=cl(c.E-2);}},
+  {id:16,name:'ИИ-страна',req:(c)=>c.S>=6,reqTxt:'требуется Наука≥6',sd:'Экономика+2, Наука+2, Счастье+1',fd:'Экономика−2, Счастье−1',ok(c){c.E=cl(c.E+2);c.S=cl(c.S+2);c.H=cl(c.H+1);},fail(c){c.E=cl(c.E-2);c.H=cl(c.H-1);}},
 ];
 
-const PROJECTS = [
-  { name:'Ядерная программа', icon:'☢️',
-    success:{A:2,S:1,E:1}, fail:{H:-3,E:-1} },
-  { name:'Космическая гонка', icon:'🚀',
-    success:{S:1,H:2}, fail:{R:-2,E:-1} },
-  { name:'Международный финансовый центр', icon:'🏦',
-    success:{E:2,S:1}, fail:{E:-2} },
-  { name:'Зелёный переход', icon:'♻️',
-    success:{R:2,S:1,E:1}, fail:{R:-1,E:-1} },
-  { name:'Чемпионат мира по футболу', icon:'⚽',
-    success:{H:2,E:1}, fail:{E:-2} },
-  { name:'Научный мегапроект', icon:'🔬',
-    success:{S:2,E:1}, fail:{E:-2} },
-  { name:'Национальный парк', icon:'🏞️',
-    success:{R:1,H:2}, fail:{E:-1} },
-  { name:'Поиск новых месторождений', icon:'⛏️',
-    success:{R:2,E:2}, fail:{R:-1,E:-1} },
-  { name:'Высокоскоростная железная дорога', icon:'🚄',
-    success:{E:2,H:1}, fail:{E:-1} },
-  { name:'Университет будущего', icon:'🎓',
-    success:{H:1,S:1,E:1}, fail:{E:-1} },
-  { name:'Нефтяной суверенный фонд', icon:'🏦',
-    success:{E:2}, fail:{R:-2,E:-1} },
-  { name:'Оборонная промышленность', icon:'🏭',
-    desc:'Страна строит заводы по производству оружия. Армия и экономика выигрывают вместе.',
-    success:{A:2,E:1}, fail:{R:-2,E:-1} },
-  { name:'Кибервойска', icon:'💻',
-    desc:'Новый цифровой фронт. Требует науки, но даёт непропорциональную военную мощь.',
-    condition: s => s.S >= 6,
-    success:{A:2,S:1}, fail:{E:-2,H:-1} },
-  { name:'Умный город', icon:'🌆',
-    desc:'Цифровая инфраструктура, умный транспорт, сенсоры — город становится живым организмом.',
-    success:{R:1,S:1,H:1,E:1}, fail:{E:-2} },
-  { name:'Привлечение талантов', icon:'🧑‍💼',
-    desc:'Страна открывает двери для лучших умов мира.',
-    success:{S:2,H:1}, fail:{E:-2} },
-  { name:'ИИ-страна', icon:'🤖',
-    desc:'Страна переходит на управление с помощью ИИ — от экономики до медицины. Прорыв или хаос.',
-    condition: s => s.S >= 6,
-    success:{E:2,S:2,H:1}, fail:{E:-2,H:-1} },
-];
+/* ════════════════════════════════════════════════════
+   UTILS
+════════════════════════════════════════════════════ */
+function cl(v){return Math.max(0,Math.min(12,v));}
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=0|Math.random()*(i+1);[b[i],b[j]]=[b[j],b[i]];}return b;}
 
-const STAT_LABELS = { R:'Ресурсы', S:'Наука и образование', H:'Счастье', A:'Армия', E:'Экономика' };
-const STAT_ICONS  = { R:'🌿', S:'📚', H:'😊', A:'⚔️', E:'💰' };
-const STAT_CLASS  = { R:'resources', S:'science', H:'happiness', A:'army', E:'economy' };
-
-// ─── GAME STATE ──────────────────────────────────────────────────────────────
-
-let G = {
-  round: 1,
-  maxRounds: 10,
-  phase: 'draw', // draw | player | ai | next
-  playerIdx: 0,
-  countries: [],   // [{...countryData, R,S,H,A,E, startR,startS,startH,startA,startE, usedProjects:[]}]
-  eventDeck: [],
-  currentEvent: null,
-  noWar: false,
-  playerActed: false,   // used action slot
-  playerDeveloped: false, // used develop slot
+/* ════════════════════════════════════════════════════
+   MULTIPLAYER STATE
+════════════════════════════════════════════════════ */
+const MP={
+  enabled:false, myUid:'', myName:'', isHost:false,
+  roomCode:'', db:null, roomRef:null,
+  lobbyPlayers:{},  // uid->{name,countryId} from Firebase
 };
 
-let selectedCountryId = null;
+// Persistent uid per browser session
+MP.myUid = sessionStorage.getItem('samirUid') || (()=>{
+  const uid='u'+Math.random().toString(36).substr(2,8)+Date.now().toString(36).substr(-4);
+  sessionStorage.setItem('samirUid',uid); return uid;
+})();
 
-// ─── INIT ────────────────────────────────────────────────────────────────────
-
-function showSelect() {
-  switchScreen('selectScreen');
-  buildCountryGrid();
-}
-
-function buildCountryGrid() {
-  const grid = document.getElementById('countriesGrid');
-  grid.innerHTML = '';
-  COUNTRIES.forEach(c => {
-    const div = document.createElement('div');
-    div.className = 'country-card';
-    div.onclick = () => selectCountry(c.id);
-    div.id = 'cc_' + c.id;
-    div.innerHTML = `
-      <div class="country-flag">${c.flag}</div>
-      <div class="country-name">${c.name}</div>
-      <div class="mini-stats">
-        ${['R','S','H','A','E'].map(k=>`
-          <div class="mini-stat"><span>${STAT_ICONS[k]} ${STAT_LABELS[k]}</span><span class="mini-stat-val">${c[k]}</span></div>
-        `).join('')}
-      </div>`;
-    grid.appendChild(div);
+function loadScript(src){
+  return new Promise((res,rej)=>{
+    if(document.querySelector(`script[src="${src}"]`)){res();return;}
+    const s=document.createElement('script');
+    s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);
   });
 }
 
-function selectCountry(id) {
-  // In multiplayer, block already-taken countries
-  if (MP.mode === 'multi' && MP.takenCountries && MP.takenCountries.includes(id)) return;
-  selectedCountryId = id;
-  document.querySelectorAll('.country-card').forEach(el => el.classList.remove('selected'));
-  document.getElementById('cc_' + id).classList.add('selected');
-  const btn = document.getElementById('startBtn');
-  btn.style.opacity = '1'; btn.style.pointerEvents = 'auto';
-}
-
-function startGame() {
-  if (!selectedCountryId) return;
-
-  // Pick 5 random AI countries
-  const others = COUNTRIES.filter(c => c.id !== selectedCountryId);
-  const aiFive = shuffle(others).slice(0, 5);
-
-  // Build country objects
-  const player = COUNTRIES.find(c => c.id === selectedCountryId);
-  G.countries = [player, ...aiFive].map((c, i) => ({
-    ...c,
-    R: c.R, S: c.S, H: c.H, A: c.A, E: c.E,
-    startR: c.R, startS: c.S, startH: c.H, startA: c.A, startE: c.E,
-    usedProjects: [],
-    isPlayer: i === 0,
-  }));
-  G.playerIdx = MP.mode === 'multi' ? MP.myIdx : 0;
-  G.currentHumanTurn = 0;
-
-  // Shuffle event deck
-  G.eventDeck = shuffle([...Array(EVENTS.length).keys()]);
-
-  switchScreen('gameScreen');
-  renderGame();
-  setPhase('draw');
-}
-
-// ─── RENDER ──────────────────────────────────────────────────────────────────
-
-function renderGame() {
-  document.getElementById('roundNum').textContent = G.round;
-  renderPlayerCard();
-  renderAICards();
-}
-
-function renderPlayerCard() {
-  const s = G.countries[0];
-  document.getElementById('playerCard').innerHTML = buildCountryCardHTML(s, true);
-}
-
-function renderAICards() {
-  const row = document.getElementById('aiCountriesRow');
-  row.innerHTML = '';
-  for (let i = 1; i < G.countries.length; i++) {
-    const div = document.createElement('div');
-    div.className = 'ai-country-card';
-    div.id = 'ai_card_' + i;
-    div.innerHTML = buildCountryCardHTML(G.countries[i], false);
-    row.appendChild(div);
-  }
-}
-
-function buildCountryCardHTML(s, isPlayer, deltas) {
-  const keys = ['R','S','H','A','E'];
-  if (isPlayer) {
-    return `
-      <div class="card-header">
-        <div class="card-flag">${s.flag}</div>
-        <div>
-          <div class="card-name">${s.name}</div>
-          <span class="you-badge">ВЫ</span>
-        </div>
-      </div>
-      <div class="stats-grid">
-        ${keys.map(k => {
-          const pct = (s[k]/12*100).toFixed(0);
-          const d = deltas ? deltas[k] : 0;
-          return `
-          <div class="stat-row">
-            <span class="stat-icon">${STAT_ICONS[k]}</span>
-            <span class="stat-label">${STAT_LABELS[k]}</span>
-            <div class="stat-bar"><div class="stat-bar-fill ${STAT_CLASS[k]}" style="width:${pct}%"></div></div>
-            <span class="stat-value">${s[k]}</span>
-            ${d ? `<span class="stat-delta ${d>0?'pos':'neg'}">${d>0?'+':''}${d}</span>` : ''}
-          </div>`;
-        }).join('')}
-      </div>`;
-  } else {
-    return `
-      <div class="card-header">
-        <div class="card-flag">${s.flag}</div>
-        <div class="card-name">${s.name}</div>
-      </div>
-      <div class="ai-stats">
-        ${keys.map(k => {
-          const pct = (s[k]/12*100).toFixed(0);
-          return `
-          <div class="ai-stat-row">
-            <span class="ai-stat-label">${STAT_ICONS[k]} ${STAT_LABELS[k]}</span>
-            <div class="ai-stat-bar"><div class="ai-stat-bar-fill ${STAT_CLASS[k]}" style="width:${pct}%"></div></div>
-            <span class="ai-stat-val">${s[k]}</span>
-          </div>`;
-        }).join('')}
-      </div>`;
-  }
-}
-
-// ─── PHASES ──────────────────────────────────────────────────────────────────
-
-function setPhase(phase) {
-  G.phase = phase;
-  const phaseEl = document.getElementById('phaseInfo');
-  const drawBtn = document.getElementById('drawEventBtn');
-  const devBtn = document.getElementById('developBtn');
-  const warBtn = document.getElementById('warBtn');
-  const projBtn = document.getElementById('projectBtn');
-  const passBtn = document.getElementById('passBtn');
-
-  // Disable all first
-  [drawBtn, devBtn, warBtn, projBtn, passBtn].forEach(b => b.disabled = true);
-
-  const waitBanner = document.getElementById('mpWaitBanner');
-  const isMulti = MP.mode === 'multi';
-
-  if (phase === 'draw') {
-    document.getElementById('turnBadge').textContent = 'Раунд ' + G.round;
-    if (isMulti && !MP.isHost) {
-      // Non-host: hide draw button, show waiting
-      drawBtn.style.display = 'none';
-      if (waitBanner) { waitBanner.style.display='block'; waitBanner.textContent='Ожидание: Игрок 1 открывает событие…'; }
-      phaseEl.textContent = 'Ожидание события…';
-    } else {
-      drawBtn.style.display = '';
-      drawBtn.disabled = false;
-      if (waitBanner) waitBanner.style.display='none';
-      phaseEl.textContent = 'Открой карточку события';
-    }
-  } else if (phase === 'player') {
-    drawBtn.style.display = isMulti && !MP.isHost ? 'none' : '';
-    if (waitBanner) waitBanner.style.display = 'none';
-    const myTurn = mpIsMyTurn();
-    const humansByNum = G.countries.filter(c=>c.humanUid).sort((a,b)=>(a.playerNum||0)-(b.playerNum||0));
-    const cur = humansByNum[G.humanTurnIdx||0];
-    if (myTurn) {
-      phaseEl.textContent = isMulti ? `Твой ход (Игрок ${cur?.playerNum||1})` : 'Твой ход — развивайся и действуй';
-      document.getElementById('turnBadge').textContent = 'Твой ход';
-      if (waitBanner) waitBanner.style.display = 'none';
-    } else {
-      phaseEl.textContent = `Ход Игрока ${cur?.playerNum||'?'}…`;
-      document.getElementById('turnBadge').textContent = `Игрок ${cur?.playerNum||'?'}`;
-      if (waitBanner) { waitBanner.style.display='block'; waitBanner.textContent=`Ожидание: Игрок ${cur?.playerNum||'?'} делает ход…`; }
-    }
-    devBtn.disabled = !myTurn || G.playerDeveloped || G.countries[0].E <= 0;
-    warBtn.disabled = !myTurn || G.playerActed || G.noWar || G.countries[0].A < 5 || G.countries[0].E < 4;
-    projBtn.disabled = !myTurn || G.playerActed;
-    passBtn.disabled = !myTurn;
-    if (G.playerDeveloped) devBtn.classList.add('used'); else devBtn.classList.remove('used');
-  } else if (phase === 'ai') {
-    phaseEl.textContent = 'Ходят другие страны...';
-    document.getElementById('turnBadge').textContent = 'Ход ИИ';
-    setTimeout(aiTurn, 800);
-  } else if (phase === 'next') {
-    if (G.round >= G.maxRounds) {
-      phaseEl.textContent = 'Игра окончена!';
-      drawBtn.textContent = 'Посмотреть итоги';
-      drawBtn.disabled = false;
-      drawBtn.onclick = showResults;
-    } else {
-      phaseEl.textContent = 'Раунд закончен. Начни следующий!';
-      drawBtn.textContent = 'Следующий раунд';
-      drawBtn.disabled = false;
-      drawBtn.onclick = nextRound;
-    }
-    document.getElementById('turnBadge').textContent = 'Конец раунда';
-  }
-}
-
-async function nextRound() {
-  G.round++;
-  G.playerActed = false;
-  G.playerDeveloped = false;
-  G.noWar = false;
-  G.currentEvent = null;
-  document.getElementById('drawEventBtn').textContent = 'Открыть событие';
-  document.getElementById('drawEventBtn').onclick = drawEvent;
-  document.getElementById('eventCard').className = 'event-card';
-  document.getElementById('eventName').textContent = '—';
-  document.getElementById('eventDesc').textContent = 'Нажми кнопку ниже чтобы открыть карточку';
-  document.getElementById('eventCard').querySelector('.event-icon').textContent = '🎴';
-  document.getElementById('roundNum').textContent = G.round;
-  renderGame();
-  setPhase('draw');
-}
-
-// ─── EVENT ───────────────────────────────────────────────────────────────────
-
-async function drawEvent() {
-  if (G.eventDeck.length === 0) G.eventDeck = shuffle([...Array(EVENTS.length).keys()]);
-  const idx = G.eventDeck.pop();
-  const ev = EVENTS[idx];
-  G.currentEvent = ev;
-  G.noWar = !!ev.noWar;
-
-  document.getElementById('eventCard').className = 'event-card revealed';
-  document.getElementById('eventCard').querySelector('.event-icon').textContent = ev.icon;
-  document.getElementById('eventName').textContent = ev.name;
-  document.getElementById('eventDesc').textContent = ev.desc;
-
-  // Apply to all countries
-  const allChanges = [];
-  G.countries.forEach((s, i) => {
-    const before = {R:s.R,S:s.S,H:s.H,A:s.A,E:s.E};
-    let changes;
-
-    if (ev.name === 'Школьная реформа') {
-      // AI always does it if has economy
-      if (!s.isPlayer) {
-        if (s.E >= 1) { s.E = Math.max(0,s.E-1); s.S = Math.min(12,s.S+2); changes = ['E−1','N+2']; }
-        else changes = [];
-      } else {
-        changes = ['optional']; // handle for player separately
-      }
-    } else {
-      changes = ev.apply(s);
-    }
-
-    const delta = {R:s.R-before.R,S:s.S-before.N,H:s.H-before.H,A:s.A-before.A,E:s.E-before.E};
-    allChanges.push({name:s.name, changes, delta});
-  });
-
-  // Log
-  addLog(`📋 ${ev.name}`, 'important');
-  allChanges.forEach(c => {
-    const ch = c.changes.filter(x=>x!=='optional'&&x!=='🚫война');
-    if (ch.length) addLog(`  ${c.name}: ${ch.join(', ')}`);
-  });
-  if (G.noWar) addLog('🚫 В этом раунде нельзя объявлять войну', 'war');
-
-  renderGame();
-
-  // Check if player needs school reform prompt
-  if (ev.name === 'Школьная реформа' && G.countries[0].E >= 1) {
-    setTimeout(() => {
-      showModal('Школьная реформа',
-        `Потратить 1 экономику чтобы получить +2 науки?\n\nСейчас: Экономика ${G.countries[0].E}, Наука и образование ${G.countries[0].S}`,
-        [
-          { text: 'Да, инвестировать (E−1, N+2)', cls: 'btn-success', fn: () => {
-            G.countries[0].E = Math.max(0,G.countries[0].E-1);
-            G.countries[0].N = Math.min(12,G.countries[0].N+2);
-            addLog(`  Ты: E−1, S+2`, 'good');
-            closeModal(); renderGame(); setPhase('player');
-          }},
-          { text: 'Пропустить', cls: 'btn-secondary', fn: () => { closeModal(); setPhase('player'); }}
-        ]
-      );
-    }, 300);
-  } else {
-    setPhase('player');
-  }
-}
-
-// ─── DEVELOP ─────────────────────────────────────────────────────────────────
-
-function openDevelop() {
-  const s = G.countries[0];
-
-  const importOptions = ['R','S','H','A'].map(k => ({
-    text: `📥 Импорт: E−1 → ${STAT_ICONS[k]} ${STAT_LABELS[k]}+1 (сейчас ${s[k]})`,
-    cls: 'btn-secondary',
-    disabled: s.E <= 0,
-    fn: () => {
-      s.E = Math.max(0, s.E-1);
-      s[k] = Math.min(12, s[k]+1);
-      G.playerDeveloped = true;
-      addLog(`📥 Ты: E−1, ${STAT_LABELS[k]}+1`, 'good');
-      closeModal(); renderGame(); setPhase('player');
-    }
-  }));
-
-  const exportOptions = ['R','S','H','A'].filter(k => s[k] > 0).map(k => ({
-    text: `📤 Экспорт: ${STAT_ICONS[k]} ${STAT_LABELS[k]}−1 → E+1 (сейчас ${s[k]})`,
-    cls: 'btn-secondary',
-    fn: () => {
-      s[k] = Math.max(0, s[k]-1);
-      s.E = Math.min(12, s.E+1);
-      G.playerDeveloped = true;
-      addLog(`📤 Ты: ${STAT_LABELS[k]}−1, E+1`, 'good');
-      closeModal(); renderGame(); setPhase('player');
-    }
-  }));
-
-  showModal('Внутреннее развитие',
-    `Импорт: потратить экономику (сейчас: ${s.E}) на развитие.\nЭкспорт: продать ресурс ради экономики.`,
-    [
-      ...importOptions,
-      ...exportOptions,
-      { text: 'Отмена', cls: 'btn-secondary', fn: closeModal }
-    ]
-  );
-}
-
-// ─── WAR ─────────────────────────────────────────────────────────────────────
-
-function isNeutral(c) {
-  return c.id === 'che' && c.E > 7;
-}
-
-function openWar() {
-  const player = G.countries[0];
-  const targets = G.countries.slice(1);
-  showModal('Объявить войну',
-    'Война стоит A−1, E−1. Победа: R+2, H+1. Поражение: H−2. Выбери цель:',
-    targets.map((t, i) => ({
-      text: isNeutral(t)
-        ? `${t.flag} ${t.name} 🕊️ нейтральна (E≥7)`
-        : `${t.flag} ${t.name} (Армия: ${t.A})`,
-      cls: isNeutral(t) ? 'btn-secondary' : 'btn-danger',
-      fn: isNeutral(t)
-        ? () => {}
-        : () => { closeModal(); conductWar(0, i+1); }
-    })).concat([{ text: 'Отмена', cls: 'btn-secondary', fn: closeModal }])
-  );
-}
-
-function conductWar(attackerIdx, defenderIdx) {
-  const atk = G.countries[attackerIdx];
-  const def = G.countries[defenderIdx];
-
-  // Ask for allies
-  const others = G.countries.map((_,i)=>i).filter(i=>i!==attackerIdx&&i!==defenderIdx);
-  let atkAllies = [];
-  let defAllies = [];
-
-  if (atk.isPlayer) {
-    // Player is attacker — ask who wants to help
-    showWarAllyModal(atk, def, others, atkAllies, defAllies, (aa, da) => {
-      resolveWar(attackerIdx, defenderIdx, aa, da);
-    });
-  } else {
-    // AI is attacker — each AI ally decides based on: enemy-of-enemy, balance of power, army
-    const strongest = G.countries.reduce((bestIdx, c, i) => {
-      if (i === attackerIdx || i === defenderIdx) return bestIdx;
-      return c.A > G.countries[bestIdx].A ? i : bestIdx;
-    }, others[0] ?? attackerIdx);
-
-    function aiAllyScore(allyIdx, sideIdx, oppIdx) {
-      const ally = G.countries[allyIdx];
-      const side = G.countries[sideIdx];
-      const opp  = G.countries[oppIdx];
-      if (ally.A < 4) return -99; // too weak to commit
-      let score = 0;
-      if (oppIdx === strongest) score += 2;          // enemy of my enemy
-      if (side.A < opp.A) score += 1;                // balance of power
-      return score;
-    }
-
-    others.forEach(i => {
-      const c = G.countries[i];
-      if (c.isPlayer) return;
-      const scoreAtk = aiAllyScore(i, attackerIdx, defenderIdx);
-      const scoreDef = aiAllyScore(i, defenderIdx, attackerIdx);
-      if (scoreAtk > 0 && scoreAtk >= scoreDef && atkAllies.length < 3) atkAllies.push(i);
-      else if (scoreDef > 0 && scoreDef > scoreAtk && defAllies.length < 3) defAllies.push(i);
-    });
-
-    // Ask player to take sides
-    const atkAllyNames = atkAllies.map(i => G.countries[i].flag).join(' ') || '—';
-    const defAllyNames = defAllies.map(i => G.countries[i].flag).join(' ') || '—';
-    showModal(`⚔️ ${atk.name} нападает на ${def.name}!`,
-      `${atk.flag} ${atk.name} (A:${atk.A}) атакует ${def.flag} ${def.name} (A:${def.A})\n\nЗа атаку: ${atkAllyNames}\nЗа защиту: ${defAllyNames}\n\nТы хочешь вмешаться? (потеряешь A−1)`,
-      [
-        { text: `⚔️ Помочь ${atk.name}`, cls: 'btn-danger', fn: () => {
-          if(atkAllies.length<3) atkAllies.push(0);
-          closeModal(); resolveWar(attackerIdx, defenderIdx, atkAllies, defAllies);
-        }},
-        { text: `🛡 Помочь ${def.name}`, cls: 'btn-success', fn: () => {
-          if(defAllies.length<3) defAllies.push(0);
-          closeModal(); resolveWar(attackerIdx, defenderIdx, atkAllies, defAllies);
-        }},
-        { text: 'Не вмешиваться', cls: 'btn-secondary', fn: () => {
-          closeModal(); resolveWar(attackerIdx, defenderIdx, atkAllies, defAllies);
-        }},
-      ]
-    );
-  }
-}
-
-function showWarAllyModal(atk, def, others, atkAllies, defAllies, onConfirm) {
-  const body = document.getElementById('modalBody');
-  document.getElementById('modalTitle').textContent = `⚔️ Объявление войны`;
-  document.getElementById('modalButtons').innerHTML = '';
-
-  const allyChoices = {}; // idx -> 'atk'|'def'|null
-
-  body.innerHTML = `
-    <p style="color:var(--text-dim);margin-bottom:1rem;font-size:0.9rem">
-      Ты нападаешь: ${atk.flag} ${atk.name} (Армия: ${atk.A})<br>
-      Цель: ${def.flag} ${def.name} (Армия: ${def.A})
-    </p>
-    <p style="margin-bottom:0.8rem;font-size:0.85rem;color:var(--text-dim)">Предложи союзникам помочь (каждый теряет 1 армию, не более 3 с каждой стороны):</p>
-    <div id="allyButtons">
-      ${others.map(i => {
-        const c = G.countries[i];
-        return `<button class="ally-btn" id="ally_${i}" onclick="toggleAlly(${i},'atk')">${c.flag} ${c.name} (A:${c.A})</button>`;
-      }).join('')}
-      ${others.length === 0 ? '<p style="color:var(--text-dim);font-size:0.85rem">Нет доступных союзников</p>' : ''}
-    </div>
-    <div style="margin-top:0.8rem;font-size:0.75rem;color:var(--text-dim)">
-      Нажимай на страну чтобы выбрать сторону: первый клик = атака 🔴, второй = защита 🔵, третий = отмена
-    </div>`;
-
-  window._warAllyState = {};
-  window._warAtk = atk;
-  window._warDef = def;
-  window._warOthers = others;
-  window._warCallback = onConfirm;
-
-  document.getElementById('modalButtons').innerHTML = `
-    <button class="btn-danger" onclick="confirmWarAllies()">Идти в бой!</button>
-    <button class="btn-secondary" onclick="closeModal()">Отмена</button>`;
-
-  document.getElementById('modalOverlay').classList.add('active');
-}
-
-window.toggleAlly = function(idx, _) {
-  const state = window._warAllyState;
-  const btn = document.getElementById('ally_' + idx);
-  if (!state[idx]) {
-    state[idx] = 'atk';
-    btn.className = 'ally-btn chosen-attack';
-    btn.textContent = btn.textContent.replace(/[🔴🔵]/g,'') + ' 🔴';
-  } else if (state[idx] === 'atk') {
-    state[idx] = 'def';
-    btn.className = 'ally-btn chosen-defend';
-    btn.textContent = btn.textContent.replace(/[🔴🔵]/g,'') + ' 🔵';
-  } else {
-    state[idx] = null;
-    btn.className = 'ally-btn';
-    btn.textContent = btn.textContent.replace(/[🔴🔵]/g,'');
-  }
-};
-
-window.confirmWarAllies = function() {
-  const state = window._warAllyState;
-  const atkAllies = Object.entries(state).filter(([,v])=>v==='atk').map(([k])=>parseInt(k));
-  const defAllies = Object.entries(state).filter(([,v])=>v==='def').map(([k])=>parseInt(k));
-  closeModal();
-  resolveWar(0, G.countries.indexOf(window._warDef), atkAllies.slice(0,3), defAllies.slice(0,3));
-};
-
-function showPlayerDefenseModal(attacker, player, atkAllies, neutrals, onConfirm) {
-  const defAllies = [];
-
-  // Each neutral AI decides randomly and independently
-  // We show the player who has already joined each side, then let player ask remaining neutrals
-  const alreadyAtk = atkAllies.map(i => G.countries[i]);
-
-  let bodyHTML = `
-    <div style="text-align:left;font-size:0.9rem;margin-bottom:1rem">
-      <span style="color:#f87171">⚔️ Атакует:</span> ${attacker.flag} ${attacker.name} (Армия: ${attacker.A})
-      ${alreadyAtk.length ? '<br><span style="color:var(--text-dim);font-size:0.8rem">Союзники атаки: ' + alreadyAtk.map(c=>c.flag+' '+c.name).join(', ') + '</span>' : ''}
-    </div>
-    <div style="text-align:left;font-size:0.9rem;margin-bottom:1rem">
-      <span style="color:#60a5fa">🛡️ Защищаешься ты:</span> ${player.flag} ${player.name} (Армия: ${player.A})
-    </div>`;
-
-  if (neutrals.length > 0) {
-    bodyHTML += `<div style="font-size:0.85rem;color:var(--text-dim);margin-bottom:0.6rem">Попроси о помощи — каждый союзник жертвует 1 армию ради тебя (не более 3):</div>
-    <div id="defAllyBtns" style="display:flex;flex-wrap:wrap;gap:0.4rem;justify-content:center;margin-bottom:0.8rem">`;
-    neutrals.forEach(({ c, ci }) => {
-      bodyHTML += `<button class="ally-btn" id="dab_${ci}" onclick="toggleDefAlly(${ci})">${c.flag} ${c.name} (A:${c.A})</button>`;
-    });
-    bodyHTML += '</div>';
-  } else {
-    bodyHTML += '<div style="font-size:0.85rem;color:var(--text-dim);margin-bottom:0.8rem">Нет нейтральных стран для помощи.</div>';
-  }
-
-  window._defAllyChosen = new Set();
-  window._defNeutrals = neutrals;
-  window._defOnConfirm = onConfirm;
-
-  _modalFns = [
-    () => {
-      // Confirm: apply chosen allies
-      window._defAllyChosen.forEach(ci => {
-        defAllies.push(ci);
-      });
-      onConfirm(defAllies);
-    }
-  ];
-
-  document.getElementById('modalTitle').textContent = '⚔️ ' + attacker.name + ' объявляет тебе войну!';
-  document.getElementById('modalBody').innerHTML = '<div class="modal-text">' + bodyHTML + '</div>';
-  document.getElementById('modalButtons').innerHTML = '<button class="btn-danger" onclick="_modalFns[0]()">Принять бой!</button>';
-  document.getElementById('modalOverlay').classList.add('active');
-}
-
-window.toggleDefAlly = function(ci) {
-  const btn = document.getElementById('dab_' + ci);
-  const c = G.countries[ci];
-  if (window._defAllyChosen.has(ci)) {
-    window._defAllyChosen.delete(ci);
-    btn.className = 'ally-btn';
-    btn.textContent = c.flag + ' ' + c.name + ' (A:' + c.A + ')';
-  } else {
-    if (window._defAllyChosen.size >= 3) return;
-    // AI decides: 50% chance to agree
-    if (Math.random() < 0.5) {
-      window._defAllyChosen.add(ci);
-      btn.className = 'ally-btn chosen-defend';
-      btn.textContent = c.flag + ' ' + c.name + ' ✅ согласился!';
-    } else {
-      btn.className = 'ally-btn';
-      btn.style.opacity = '0.4';
-      btn.textContent = c.flag + ' ' + c.name + ' ❌ отказал';
-      btn.onclick = null;
-    }
-  }
-};
-
-function resolveWar(attackerIdx, defenderIdx, atkAllyIdxs, defAllyIdxs) {
-  const atk = G.countries[attackerIdx];
-  const def = G.countries[defenderIdx];
-
-  let atkTotal = atk.A;
-  let defTotal = def.A;
-
-  atkAllyIdxs.forEach(i => { G.countries[i].A = Math.max(0, G.countries[i].A-1); atkTotal++; });
-  defAllyIdxs.forEach(i => { G.countries[i].A = Math.max(0, G.countries[i].A-1); defTotal++; });
-
-  addLog(`⚔️ ${atk.name} (${atkTotal}) vs ${def.name} (${defTotal})`, 'war');
-  if (atkAllyIdxs.length) addLog(`  Союзники атаки: ${atkAllyIdxs.map(i=>G.countries[i].name).join(', ')}`, 'war');
-  if (defAllyIdxs.length) addLog(`  Союзники защиты: ${defAllyIdxs.map(i=>G.countries[i].name).join(', ')}`, 'war');
-
-  // Война всегда стоит армию и экономику (санкции, расходы)
-  atk.A = Math.max(0, atk.A - 1);
-  atk.E = Math.max(0, atk.E - 1);
-
-  let resultText;
-  if (atkTotal > defTotal) {
-    // Победа: атакующий захватывает ресурсы и поднимает дух
-    atk.R = Math.min(12, atk.R + 2);
-    atk.H = Math.min(12, atk.H + 1);
-    def.R = Math.max(0, def.R - 2);
-    def.A = Math.max(0, def.A - 1);
-    def.H = Math.max(0, def.H - 1);
-    resultText = `${atk.name} победил! R+2, H+1, A−1, E−1. ${def.name} потерял R−2, A−1, H−1.`;
-    addLog(`✅ ${resultText}`, 'good');
-  } else if (atkTotal === defTotal) {
-    atk.H = Math.max(0, atk.H - 2);
-    def.A = Math.max(0, def.A - 1); def.H = Math.max(0, def.H - 1);
-    resultText = `Ничья! ${atk.name}: A−1, E−1, H−2. ${def.name}: A−1, H−1.`;
-    addLog(`⚖️ ${resultText}`, 'war');
-  } else {
-    // Поражение: защитник поднимает дух
-    atk.H = Math.max(0, atk.H - 2);
-    def.A = Math.max(0, def.A - 1);
-    def.H = Math.min(12, def.H + 1);
-    resultText = `${def.name} отбился! H+1. ${atk.name} потерял A−1, E−1, H−2.`;
-    addLog(`🛡️ ${resultText}`, 'war');
-  }
-
-  if (atk.isPlayer) {
-    G.playerActed = true;
-    showModal('Итог войны', resultText, [{ text:'Продолжить', cls:'btn-primary', fn:() => { closeModal(); renderGame(); setPhase('player'); }}]);
-  } else {
-    renderGame();
-  }
-}
-
-// ─── PROJECTS ────────────────────────────────────────────────────────────────
-
-function openProjects() {
-  const s = G.countries[0];
-  if (!s.failedProjects) s.failedProjects = [];
-  const body = `<div class="project-list">${PROJECTS.map((p,i) => {
-    const used = s.usedProjects.includes(i);
-    const failed = s.failedProjects.includes(i);
-    const locked = p.condition && !p.condition(s);
-    const unavailable = used || locked;
-    const successStr = Object.entries(p.success).map(([k,v])=>`${STAT_ICONS[k]}+${v}`).join(' ');
-    const failStr = Object.entries(p.fail).map(([k,v])=>`${STAT_ICONS[k]}${v}`).join(' ');
-    const condNote = locked ? '<br><em>🔒 Требует условие</em>' : '';
-    const retryNote = '';
-    return `<div class="project-item ${unavailable?'used':''}" onclick="${unavailable?'':'launchProject('+i+')'}">
-      <div class="project-item-name">${p.icon} ${p.name}</div>
-      <div class="project-item-desc">
-        <span class="project-success">✅ Успех: ${successStr}</span> &nbsp;
-        <span class="project-fail">❌ Неудача: ${failStr}</span>
-        ${used?'<br><em>Уже использован</em>':''}${retryNote}${condNote}
-      </div>
-    </div>`;
-  }).join('')}</div>`;
-
-  document.getElementById('modalTitle').textContent = '🚀 Смелые проекты';
-  document.getElementById('modalBody').innerHTML = body;
-  document.getElementById('modalButtons').innerHTML = `<button class="btn-secondary" onclick="closeModal()">Отмена</button>`;
-  document.getElementById('modalOverlay').classList.add('active');
-}
-
-window.launchProject = function(idx) {
-  closeModal();
-  const s = G.countries[0];
-  if (!s.failedProjects) s.failedProjects = [];
-  const p = PROJECTS[idx];
-  const success = Math.random() < 0.5;
-
-  s.usedProjects.push(idx);
-  G.playerActed = true;
-
-  const changes = success ? p.success : p.fail;
-  Object.entries(changes).forEach(([k,v]) => { s[k] = Math.max(0, Math.min(12, s[k]+v)); });
-
-  if (success) {
-    s.failedProjects = s.failedProjects.filter(x => x !== idx);
-  }
-  // Failure: project is permanently blocked (already in usedProjects)
-
-  const changeStr = Object.entries(changes).map(([k,v])=>`${STAT_LABELS[k]} ${v>0?'+':''}${v}`).join(', ');
-
-  showModal(p.name,
-    `<div class="coin">${success ? '⭐' : '💥'}</div>
-    <div style="font-size:1.1rem;margin-bottom:0.5rem">${success ? '✅ Успех!' : '❌ Неудача!'}</div>
-    <div style="color:var(--text-dim)">${changeStr}</div>`,
-    [{ text:'Продолжить', cls:'btn-primary', fn:() => { closeModal(); renderGame(); setPhase('player'); }}]
-  );
-
-  addLog(`${success?'✅':'❌'} Проект «${p.name}»: ${changeStr}`, success?'good':'war');
-  renderGame();
-};
-
-async function playerPass() {
-  G.playerActed = true;
-  addLog('⏭️ Ход завершён');
-
-  if (MP.mode !== 'multi') {
-    setPhase('ai');
-    return;
-  }
-
-  // Multiplayer: advance to next human player or AI phase
-  const humansByNum = G.countries
-    .filter(c => c.humanUid)
-    .sort((a,b) => (a.playerNum||0)-(b.playerNum||0));
-  const nextIdx = (G.humanTurnIdx||0) + 1;
-
-  if (nextIdx < humansByNum.length) {
-    // Next human's turn
-    G.humanTurnIdx = nextIdx;
-    G.playerActed = false;
-    G.playerDeveloped = false;
-    const nextPlayer = humansByNum[nextIdx];
-    addLog(`▶️ Ход Игрока ${nextPlayer.playerNum}`);
-    // Push state so next player sees it's their turn
-    await mpPushState();
-    // If I'm host and next player is me (shouldn't happen but just in case)
-    // Just re-render
-    renderGame();
-    setPhase('player');
-  } else {
-    // All humans done — AI phase (only host runs it)
-    G.humanTurnIdx = 0;
-    G.playerActed = false;
-    G.playerDeveloped = false;
-    await mpPushState();
-    if (MP.isHost) {
-      setPhase('ai');
-    } else {
-      ['devBtn','warBtn','projBtn','passBtn'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.disabled = true;
-      });
-      document.getElementById('phaseInfo').textContent = 'ИИ делает ходы…';
-    }
-  }
-}
-
-// After player done with action, still let them develop if not done
-// Actually we move to AI after player clicks pass OR after action
-// Let's make it: after any action, check if we should go to AI phase
-// We go to AI after player clicks pass, or we let them stay in player phase
-// Actually, we need a "End turn" button. Let me add that logic:
-// The pass button acts as "end turn". Develop is separate.
-// So flow: draw event → player phase (can develop + do ONE action) → when happy, press Pass/End Turn → AI phase
-
-// ─── AI TURN ─────────────────────────────────────────────────────────────────
-
-async function aiTurn() {
-  for (let i = 1; i < G.countries.length; i++) {
-    const s = G.countries[i];
-
-    // AI develop: invest in lowest non-E stat if E > 3
-    if (s.E > 3) {
-      const stats = ['R','S','H','A'];
-      const lowest = stats.reduce((a,b) => s[a]<s[b]?a:b);
-      s.E = Math.max(0, s.E-1);
-      s[lowest] = Math.min(12, s[lowest]+1);
-      addLog(`⚙️ ${s.name}: E−1, ${lowest}+1`);
-      renderGame();
-      await sleep(300);
-    }
-
-    // AI action: war or project (simple logic)
-    const roll = Math.random();
-    if (!G.noWar && roll < 0.2 && s.A >= 5 && s.E >= 4) {
-      // Try to attack weakest non-neutral opponent
-      const targets = G.countries.filter((_,idx)=>idx!==i && !isNeutral(G.countries[idx])).sort((a,b)=>a.A-b.A);
-      if (targets.length === 0) continue;
-      const target = targets[0];
-      const targetIdx = G.countries.indexOf(target);
-      addLog(`⚔️ ${s.name} объявляет войну ${target.name}!`, 'war');
-      renderGame();
-      await sleep(400);
-
-      // AI allies decide
-      const atkAllies = [];
-      const defAllies = [];
-      G.countries.forEach((c, ci) => {
-        if (ci === i || ci === targetIdx) return;
-        if (c.isPlayer) return;
-        const r = Math.random();
-        if (r < 0.25 && atkAllies.length < 3) atkAllies.push(ci);
-        else if (r < 0.5 && defAllies.length < 3) defAllies.push(ci);
-      });
-
-      // If target is player, let player request allies
-      if (target.isPlayer) {
-        await new Promise(resolve => {
-          const neutrals = G.countries
-            .map((c, ci) => ({ c, ci }))
-            .filter(({ c, ci }) => ci !== i && ci !== targetIdx && !c.isPlayer);
-          showPlayerDefenseModal(s, target, atkAllies, neutrals, (finalDefAllies) => {
-            defAllies.push(...finalDefAllies);
-            closeModal();
-            resolve();
-          });
-        });
-        resolveWar(i, targetIdx, atkAllies, defAllies);
-        await sleep(400);
-      } else {
-        resolveWar(i, targetIdx, atkAllies, defAllies);
-        await sleep(400);
-      }
-    } else if (roll < 0.35) {
-      // Do a random project
-      const available = PROJECTS.map((_,pi)=>pi).filter(pi=>!s.usedProjects.includes(pi) && (!PROJECTS[pi].condition || PROJECTS[pi].condition(s)));
-      if (available.length > 0) {
-        const pi = available[Math.floor(Math.random()*available.length)];
-        const p = PROJECTS[pi];
-        const success = Math.random() < 0.5;
-        const changes = success ? p.success : p.fail;
-        Object.entries(changes).forEach(([k,v]) => { s[k] = Math.max(0, Math.min(12, s[k]+v)); });
-        if (!s.failedProjects) s.failedProjects = [];
-        if (success) {
-          s.usedProjects.push(pi);
-          s.failedProjects = s.failedProjects.filter(x => x !== pi);
-        } else {
-          if (s.failedProjects.includes(pi)) {
-            s.usedProjects.push(pi);
-          } else {
-            s.failedProjects.push(pi);
-          }
-        }
-        const changeStr = Object.entries(changes).map(([k,v])=>`${k}${v>0?'+':''}${v}`).join(' ');
-        addLog(`${success?'✅':'❌'} ${s.name}: «${p.name}» — ${changeStr}`, success?'good':'');
-        renderGame();
-        await sleep(300);
-      }
-    }
-  }
-
-  renderGame();
-  setPhase('next');
-}
-
-// ─── RESULTS ─────────────────────────────────────────────────────────────────
-
-function showResults() {
-  const countries = G.countries;
-
-  // Calculate total progress
-  countries.forEach(s => {
-    s.totalProgress = (s.R-s.startR)+(s.S-s.startS)+(s.H-s.startH)+(s.A-s.startA)+(s.E-s.startE);
-  });
-
-  const categories = [
-    { name:'Золотая Орда', icon:'👑', desc:'Богатейшая страна', stat:'E', title:'экономика' },
-    { name:'Колыбель Возрождения', icon:'🎓', desc:'Умнейшая страна', stat:'S', title:'наука' },
-    { name:'Пресветлейшая Республика', icon:'🌸', desc:'Счастливейшая страна', stat:'H', title:'счастье' },
-    { name:'Непобедимая Армада', icon:'⚔️', desc:'Сильнейшая армия', stat:'A', title:'армия' },
-    { name:'Аркадия', icon:'🌿', desc:'Природное изобилие и счастливый народ (R+H)', stat:'sustainDev', title:'R+H' },
-    { name:'Экономическое чудо', icon:'🚀', desc:'Наибольший прогресс', stat:'totalProgress', title:'прогресс' },
-  ];
-
-  const stars = {};
-  countries.forEach(s => { s.sustainDev = s.R + s.H; stars[s.id] = 0; });
-
-  const catResults = categories.map(cat => {
-    const maxVal = Math.max(...countries.map(s=>s[cat.stat]));
-    const winners = countries.filter(s=>s[cat.stat]===maxVal);
-    winners.forEach(w => stars[w.id]++);
-    return { ...cat, winners, maxVal };
-  });
-
-  const maxStars = Math.max(...Object.values(stars));
-  const overallWinners = countries.filter(s=>stars[s.id]===maxStars);
-
-  switchScreen('resultsScreen');
-
-  document.getElementById('finalWinner').innerHTML = `
-    <div style="font-size:2rem;margin-bottom:0.5rem">🏆</div>
-    <div class="final-title">Мәңгілік ел — Вечная страна</div>
-    <div class="final-name">${overallWinners.map(w=>`${w.flag} ${w.name}`).join(' и ')} — ${maxStars} звёзд</div>`;
-
-  document.getElementById('allScores').innerHTML = countries.map(s => `
-    <div class="score-card">
-      <div class="score-card-header">
-        <span style="font-size:1.4rem">${s.flag}</span>
-        <div>
-          <div class="score-card-name">${s.name}</div>
-          <div style="font-size:0.75rem;color:var(--gold)">${'★'.repeat(stars[s.id])}${'☆'.repeat(6-stars[s.id])}</div>
-        </div>
-      </div>
-      <div class="score-stats">
-        ${['R','S','H','A','E'].map(k=>`${STAT_ICONS[k]} ${STAT_LABELS[k]}: ${s[k]}`).join('<br>')}
-        <br>📈 Прогресс: ${s.totalProgress>0?'+':''}${s.totalProgress}
-      </div>
-    </div>`).join('');
-
-  document.getElementById('categoryList').innerHTML = catResults.map(cat => `
-    <div class="category-item ${cat.winners.some(w=>w.isPlayer)?'winner':''}">
-      <div class="category-trophy">${cat.icon}</div>
-      <div class="category-details">
-        <div class="category-name">${cat.name}</div>
-        <div class="category-winner-name">${cat.winners.map(w=>`${w.flag} ${w.name}`).join(', ')}</div>
-      </div>
-      <div class="category-score">${cat.maxVal} ${cat.stat==='totalProgress'?'очков':''}</div>
-    </div>`).join('');
-}
-
-// ─── MODAL HELPERS ───────────────────────────────────────────────────────────
-
-let _modalFns = [];
-
-function showModal(title, body, buttons) {
-  _modalFns = buttons.map(b => b.fn);
-  document.getElementById('modalTitle').textContent = title;
-  document.getElementById('modalBody').innerHTML = `<div class="modal-text">${body.replace(/\n/g,'<br>')}</div>`;
-  document.getElementById('modalButtons').innerHTML = buttons.map((b, i) =>
-    `<button class="${b.cls}" ${b.disabled?'disabled':''} onclick="_modalFns[${i}]()">${b.text}</button>`
-  ).join('');
-  document.getElementById('modalOverlay').classList.add('active');
-}
-
-function closeModal() {
-  document.getElementById('modalOverlay').classList.remove('active');
-}
-
-// ─── LOG ─────────────────────────────────────────────────────────────────────
-
-function addLog(text, type) {
-  const log = document.getElementById('gameLog');
-  const div = document.createElement('div');
-  div.className = 'log-entry' + (type ? ' ' + type : '');
-  div.textContent = text;
-  log.appendChild(div);
-  log.scrollTop = log.scrollHeight;
-}
-
-// ─── UTILS ───────────────────────────────────────────────────────────────────
-
-// ═══════════════════════════════════════════════════════════════════════════
-// MULTIPLAYER
-// ═══════════════════════════════════════════════════════════════════════════
-
-const MP = {
-  roomId:   null,
-  myUid:    null,
-  myName:   null,
-  myNum:    null,   // 1 = host, 2,3... = others
-  isHost:   false,
-  mode:     'solo', // 'solo' | 'multi'
-  playerOrder: [],  // array of UIDs in turn order
-};
-
-function mpUid() {
-  if (!MP.myUid) MP.myUid = 'u' + Math.random().toString(36).slice(2,10);
-  return MP.myUid;
-}
-function mpRoomCode() {
-  return Math.random().toString(36).slice(2,6).toUpperCase();
-}
-function showMultiplayer() {
-  switchScreen('lobbyScreen');
-}
-
-// ─── Firebase loader ──────────────────────────────────────────────────────────
-function fbLoadScript(src) {
-  return new Promise((resolve, reject) => {
-    const s = document.createElement('script');
-    s.src = src; s.onload = resolve; s.onerror = reject;
-    document.head.appendChild(s);
-  });
-}
-async function fbInit() {
-  if (window._fbReady) return true;
-  try {
-    await fbLoadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js');
-    await fbLoadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js');
+async function loadFirebase(){
+  if(MP.db) return;
+  await loadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js');
+  await loadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js');
+  if(!firebase.apps.length){
     firebase.initializeApp({
-      apiKey:            "AIzaSyD5XfEmCH1k66knsEECU0yiygiNyc15Fuw",
-      authDomain:        "samir-game-2ef2b.firebaseapp.com",
-      databaseURL:       "https://samir-game-2ef2b-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId:         "samir-game-2ef2b",
-      storageBucket:     "samir-game-2ef2b.firebasestorage.app",
-      messagingSenderId: "381006167960",
-      appId:             "1:381006167960:web:2519d94b5ea3376ea7b5ed"
+      apiKey:"AIzaSyD5XfEmCH1k66knsEECU0yiygiNyc15Fuw",
+      authDomain:"samir-game-2ef2b.firebaseapp.com",
+      databaseURL:"https://samir-game-2ef2b-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId:"samir-game-2ef2b",
+      storageBucket:"samir-game-2ef2b.firebasestorage.app",
+      messagingSenderId:"381006167960",
+      appId:"1:381006167960:web:2519d94b5ea3376ea7b5ed"
     });
-    var _db = firebase.database();
-    window._fbSet = (p,v) => _db.ref(p).set(v);
-    window._fbGet = (p)   => _db.ref(p).get();
-    window._fbOn  = (p,cb)=> _db.ref(p).on('value', snap => cb(snap.val()));
-    window._fbUpd = (p,v) => _db.ref(p).update(v);
-    window._fbReady = true;
-    return true;
-  } catch(e) { alert('Firebase error: ' + e.message); return false; }
+  }
+  MP.db = firebase.database();
 }
 
-// ─── Create / Join ────────────────────────────────────────────────────────────
-async function mpCreateRoom() {
-  if (!await fbInit()) return;
-  const name = document.getElementById('playerNameInput').value.trim() || 'Игрок 1';
-  MP.myUid  = mpUid();
-  MP.myName = name;
-  MP.isHost = true;
-  MP.myNum  = 1;
-  MP.roomId = mpRoomCode();
-
-  await window._fbSet(`rooms/${MP.roomId}`, {
-    status: 'lobby',
-    host:   MP.myUid,
-    players: { [MP.myUid]: { name, num: 1, countryId: null } }
-  });
-
-  document.getElementById('roomCodeDisplay').textContent = MP.roomId;
-  document.getElementById('lobbyCreate').style.display = 'none';
-  document.getElementById('lobbyRoom').style.display   = 'block';
-  document.getElementById('lobbyStartBtn').style.display = 'block';
-  mpWatchLobby();
+function genCode(){
+  return Array.from({length:4},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*32)]).join('');
 }
 
-async function mpJoinRoom() {
-  if (!await fbInit()) return;
-  const name = document.getElementById('playerNameInput').value.trim() || 'Гость';
-  const code = document.getElementById('joinCodeInput').value.trim().toUpperCase();
-  if (!code) { alert('Введи код комнаты'); return; }
-
-  const snap = await window._fbGet(`rooms/${code}`);
-  if (!snap || !snap.exists()) { alert('Комната не найдена'); return; }
-  const room = snap.val();
-  if (room.status !== 'lobby') { alert('Игра уже началась'); return; }
-
-  MP.myUid  = mpUid();
-  MP.myName = name;
-  MP.isHost = false;
-  MP.roomId = code;
-
-  // Assign next number
-  const existingNums = Object.values(room.players || {}).map(p => p.num);
-  MP.myNum = Math.max(0, ...existingNums) + 1;
-
-  await window._fbUpd(`rooms/${code}/players`, {
-    [MP.myUid]: { name, num: MP.myNum, countryId: null }
-  });
-
-  document.getElementById('roomCodeDisplay').textContent = MP.roomId;
-  document.getElementById('lobbyCreate').style.display = 'none';
-  document.getElementById('lobbyRoom').style.display   = 'block';
-  document.getElementById('lobbyWaitMsg').style.display = 'none';
-  mpWatchLobby();
+// Serialize: convert Sets to arrays for Firebase
+function serializeG(){
+  return JSON.parse(JSON.stringify(G,(k,v)=>v instanceof Set?[...v]:v));
+}
+// Deserialize: restore Sets
+function deserializeG(data){
+  const g=JSON.parse(JSON.stringify(data));
+  if(g.countries) g.countries.forEach(c=>{c.projectsBlocked=new Set(Array.isArray(c.projectsBlocked)?c.projectsBlocked:[]);});
+  return g;
 }
 
-// ─── Lobby ────────────────────────────────────────────────────────────────────
-function mpBuildCountryPicker(takenByOthers) {
-  const picker = document.getElementById('lobbyCountryPicker');
-  if (!picker) return;
-  picker.innerHTML = COUNTRIES.map(c => {
-    const taken = takenByOthers.includes(c.id);
-    const mine  = MP.myCountryId === c.id;
-    return `<button onclick="mpPickCountry('${c.id}')"
-      style="padding:0.3rem 0.6rem;border-radius:4px;border:1px solid ${mine?'var(--gold)':taken?'#333':'var(--border)'};
-      background:${mine?'rgba(201,168,76,0.2)':'transparent'};color:${taken?'#444':'var(--text)'};
-      cursor:${taken?'default':'pointer'};font-size:0.85rem;pointer-events:${taken?'none':'auto'}">
-      ${c.flag} ${c.name}
-    </button>`;
-  }).join('');
+// Who is the active player this turn?
+function getMyIdx(){
+  if(!MP.enabled) return 0;
+  const i=G.countries.findIndex(c=>c.humanUid===MP.myUid);
+  return i>=0?i:0;
+}
+function amIActive(){
+  if(!MP.enabled) return true;
+  return G.currentTurnUid===MP.myUid;
+}
+function getPlayerName(uid){
+  if(MP.lobbyPlayers[uid]) return MP.lobbyPlayers[uid].name;
+  const c=G.countries.find(c=>c.humanUid===uid);
+  return c?c.name:uid;
 }
 
-async function mpPickCountry(id) {
-  MP.myCountryId = id;
-  const c = COUNTRIES.find(cc => cc.id === id);
-  document.getElementById('lobbyMyChoice').textContent = 'Выбрано: ' + c.flag + ' ' + c.name;
-  await window._fbUpd(`rooms/${MP.roomId}/players/${MP.myUid}`, { countryId: id });
+function pushState(){
+  if(!MP.enabled||!MP.roomRef) return;
+  MP.roomRef.child('gameState').set(serializeG());
 }
 
-function mpWatchLobby() {
-  mpBuildCountryPicker([]);
-  window._fbOn(`rooms/${MP.roomId}`, room => {
-    if (!room) return;
-    const players = room.players || {};
-
-    // Taken countries
-    const takenByOthers = Object.entries(players)
-      .filter(([uid]) => uid !== MP.myUid)
-      .map(([,p]) => p.countryId).filter(Boolean);
-    mpBuildCountryPicker(takenByOthers);
-
-    // Player list sorted by num
-    const sorted = Object.entries(players).sort((a,b) => a[1].num - b[1].num);
-    const list = document.getElementById('lobbyPlayerList');
-    if (list) list.innerHTML = sorted.map(([uid, p]) => {
-      const c = p.countryId ? COUNTRIES.find(cc => cc.id === p.countryId) : null;
-      return `<div style="padding:0.4rem 0;border-bottom:1px solid var(--border);color:${uid===MP.myUid?'var(--gold)':'var(--text)'}">
-        Игрок ${p.num}${uid===room.host?' 👑':''}: ${p.name}
-        ${c ? ' — ' + c.flag + ' ' + c.name : ' — не выбрал'}
-      </div>`;
-    }).join('');
-
-    // Host: show start button when all chose
-    if (MP.isHost) {
-      const allChosen = Object.values(players).every(p => p.countryId);
-      const btn = document.getElementById('lobbyStartBtn');
-      if (btn) {
-        btn.style.display = 'block';
-        btn.style.opacity = allChosen ? '1' : '0.4';
-        btn.style.pointerEvents = allChosen ? 'auto' : 'none';
-        btn.textContent = allChosen ? 'Начать игру' : 'Ждём выбора стран…';
-      }
-    }
-
-    // Game started
-    if (room.status === 'playing' && room.gameState) {
-      mpLoadState(room.gameState, room.players);
+let _watchingState=false;
+let _prevTurnUid='';
+function watchState(){
+  if(_watchingState) return;
+  _watchingState=true;
+  MP.roomRef.child('gameState').on('value',snap=>{
+    if(!snap.exists()) return;
+    const newG=deserializeG(snap.val());
+    // Detect AI phase trigger for host
+    const becameAI = newG.currentTurnUid==='ai' && _prevTurnUid!=='ai';
+    _prevTurnUid=newG.currentTurnUid;
+    G=newG;
+    renderAll();
+    renderEventCardFromState();
+    syncUI();
+    if(MP.isHost && becameAI){
+      setTimeout(runAllAI,600);
     }
   });
 }
 
-// ─── Start game (host only) ───────────────────────────────────────────────────
-async function mpStartGame() {
-  const snap = await window._fbGet(`rooms/${MP.roomId}`);
-  if (!snap || !snap.exists()) return;
-  const room = snap.val();
-  const players = room.players || {};
+/* ════════════════════════════════════════════════════
+   GAME STATE
+════════════════════════════════════════════════════ */
+let G={};
 
-  // Sort players by num → defines turn order
-  const sorted = Object.entries(players).sort((a,b) => a[1].num - b[1].num);
-  MP.playerOrder = sorted.map(([uid]) => uid);
-
-  // Build countries array: humans in turn order, then AI
-  const humanCountries = sorted.map(([uid, p]) => {
-    const c = COUNTRIES.find(cc => cc.id === p.countryId);
-    return { ...c, R:c.R,S:c.S,H:c.H,A:c.A,E:c.E,
-      startR:c.R,startS:c.S,startH:c.H,startA:c.A,startE:c.E,
-      usedProjects:[], failedProjects:[], isPlayer:false, humanUid:uid, playerNum:p.num };
-  });
-  const usedIds = humanCountries.map(c => c.id);
-  const aiCountries = shuffle(COUNTRIES.filter(c => !usedIds.includes(c.id)))
-    .slice(0, Math.max(0, 6 - humanCountries.length))
-    .map(c => ({ ...c, R:c.R,S:c.S,H:c.H,A:c.A,E:c.E,
-      startR:c.R,startS:c.S,startH:c.H,startA:c.A,startE:c.E,
-      usedProjects:[], failedProjects:[], isPlayer:false }));
-
-  // Host is always index 0 in this local view
-  const allCountries = [...humanCountries, ...aiCountries];
-  allCountries[0].isPlayer = true; // host sees himself at 0
-
-  MP.mode = 'multi';
-  G.countries   = allCountries;
-  G.playerIdx   = 0;
-  G.round       = 1;
-  G.phase       = 'draw';
-  G.noWar       = false;
-  G.playerActed = false;
-  G.playerDeveloped = false;
-  G.humanTurnIdx = 0; // index into humanCountries — whose turn among humans
-  G.eventDeck   = shuffle([...Array(EVENTS.length).keys()]);
-
-  const state = mpSerialize();
-  await window._fbSet(`rooms/${MP.roomId}/playerOrder`, MP.playerOrder);
-  await window._fbSet(`rooms/${MP.roomId}/gameState`,   state);
-  await window._fbSet(`rooms/${MP.roomId}/status`,      'playing');
-
-  switchScreen('gameScreen');
-  renderGame();
-  setPhase('draw');
-}
-
-// ─── State sync ───────────────────────────────────────────────────────────────
-function mpSerialize() {
+function mkCountry(data,humanUid,idx){
   return {
-    round: G.round, phase: G.phase, noWar: G.noWar,
-    playerActed: G.playerActed, playerDeveloped: G.playerDeveloped,
-    humanTurnIdx: G.humanTurnIdx || 0,
-    eventDeck: G.eventDeck,
-    currentEvent: G.currentEvent ? { name: G.currentEvent.name } : null,
-    countries: G.countries.map(c => ({
-      id:c.id, R:c.R,S:c.S,H:c.H,A:c.A,E:c.E,
-      startR:c.startR,startS:c.startS,startH:c.startH,startA:c.startA,startE:c.startE,
-      usedProjects:c.usedProjects, failedProjects:c.failedProjects||[],
-      humanUid:c.humanUid||null, playerNum:c.playerNum||null, isPlayer:c.isPlayer,
-    }))
+    id:data.id,name:data.name,flag:data.flag,
+    humanUid:humanUid||null,
+    idx,R:data.R,S:data.S,H:data.H,A:data.A,E:data.E,
+    projectsBlocked:new Set(),
   };
 }
 
-async function mpPushState() {
-  if (MP.mode !== 'multi') return;
-  await window._fbSet(`rooms/${MP.roomId}/gameState`, mpSerialize());
-}
+/* ════════════════════════════════════════════════════
+   TITLE SCREEN
+════════════════════════════════════════════════════ */
+function show(id){['titleScreen','mpSetup','mpRoom','lobby','game','victory'].forEach(s=>document.getElementById(s).classList.add('hidden'));document.getElementById(id).classList.remove('hidden');}
 
-function mpLoadState(state, playersMap) {
-  // Find my country by humanUid, put it at index 0
-  const myIdx = state.countries.findIndex(c => c.humanUid === MP.myUid);
-  const ordered = myIdx >= 0
-    ? [state.countries[myIdx], ...state.countries.filter((_,i)=>i!==myIdx)]
-    : state.countries;
+document.getElementById('btnSP').addEventListener('click',()=>{
+  show('lobby');
+  buildSPLobby();
+});
 
-  // humanTurnIdx refers to position in original order (by playerNum)
-  // Find which humanUid has the turn
-  const humansByNum = state.countries
-    .filter(c => c.humanUid)
-    .sort((a,b) => (a.playerNum||0)-(b.playerNum||0));
-  const activeTurnUid = humansByNum[state.humanTurnIdx || 0]?.humanUid || null;
-  const isMyTurn = activeTurnUid === MP.myUid;
+document.getElementById('btnMP').addEventListener('click',()=>{
+  show('mpSetup');
+});
 
-  G.round           = state.round;
-  G.phase           = state.phase;
-  G.noWar           = state.noWar;
-  G.playerActed     = isMyTurn ? state.playerActed : true; // block buttons if not my turn
-  G.playerDeveloped = isMyTurn ? state.playerDeveloped : true;
-  G.humanTurnIdx    = state.humanTurnIdx || 0;
-  G.eventDeck       = state.eventDeck;
-  G.countries       = ordered.map((c,i) => ({
-    ...COUNTRIES.find(cc=>cc.id===c.id), ...c,
-    isPlayer: i === 0,
-  }));
-  if (state.currentEvent) {
-    G.currentEvent = EVENTS.find(e=>e.name===state.currentEvent.name)||null;
+document.getElementById('btnBackTitle').addEventListener('click',()=>show('titleScreen'));
+
+/* ════════════════════════════════════════════════════
+   MP SETUP
+════════════════════════════════════════════════════ */
+document.getElementById('btnCreate').addEventListener('click',async()=>{
+  const name=document.getElementById('mpName').value.trim();
+  if(!name){document.getElementById('mpErr').textContent='Введите имя';return;}
+  document.getElementById('mpErr').textContent='';
+  MP.myName=name;
+  document.getElementById('btnCreate').disabled=true;
+  try{
+    await loadFirebase();
+    const code=genCode();
+    MP.roomCode=code;
+    MP.isHost=true;
+    MP.roomRef=MP.db.ref('rooms/'+code);
+    await MP.roomRef.set({
+      host:MP.myUid,
+      players:{[MP.myUid]:{name,countryId:null}},
+      started:false,
+    });
+    openMPRoom(code);
+  }catch(e){
+    document.getElementById('mpErr').textContent='Ошибка: '+e.message;
+    document.getElementById('btnCreate').disabled=false;
   }
+});
 
-  MP.mode = 'multi';
-  G.playerIdx = 0;
+document.getElementById('btnJoin').addEventListener('click',async()=>{
+  const name=document.getElementById('mpName').value.trim();
+  const code=document.getElementById('mpCodeInput').value.trim().toUpperCase();
+  if(!name){document.getElementById('mpErr').textContent='Введите имя';return;}
+  if(code.length!==4){document.getElementById('mpErr').textContent='Код — 4 символа';return;}
+  document.getElementById('mpErr').textContent='';
+  MP.myName=name;
+  document.getElementById('btnJoin').disabled=true;
+  try{
+    await loadFirebase();
+    const snap=await MP.db.ref('rooms/'+code).once('value');
+    if(!snap.exists()){document.getElementById('mpErr').textContent='Комната не найдена';document.getElementById('btnJoin').disabled=false;return;}
+    if(snap.val().started){document.getElementById('mpErr').textContent='Игра уже началась';document.getElementById('btnJoin').disabled=false;return;}
+    MP.roomCode=code;
+    MP.isHost=snap.val().host===MP.myUid;
+    MP.roomRef=MP.db.ref('rooms/'+code);
+    await MP.roomRef.child('players/'+MP.myUid).set({name,countryId:null});
+    openMPRoom(code);
+  }catch(e){
+    document.getElementById('mpErr').textContent='Ошибка: '+e.message;
+    document.getElementById('btnJoin').disabled=false;
+  }
+});
 
-  renderGame();
-  switchScreen('gameScreen');
-  setPhase(G.phase);
+/* ════════════════════════════════════════════════════
+   MP WAITING ROOM
+════════════════════════════════════════════════════ */
+let mpSelCountryId=null;
 
-  // Non-host: watch for state updates
-  if (!MP.isHost) mpWatchGame();
-}
+function openMPRoom(code){
+  MP.enabled=true;
+  document.getElementById('mpRoomCode').textContent=code;
+  show('mpRoom');
+  buildMPCountryGrid();
 
-function mpWatchGame() {
-  window._fbOn(`rooms/${MP.roomId}/gameState`, state => {
-    if (!state || MP.isHost) return;
-    mpLoadState(state, null);
+  // Watch lobby players
+  MP.roomRef.child('players').on('value',snap=>{
+    MP.lobbyPlayers=snap.val()||{};
+    renderMPPlayerList();
+    updateMPCountryGrid();
+    checkHostCanStart();
+  });
+
+  // Watch started
+  MP.roomRef.child('started').on('value',snap=>{
+    if(snap.val()===true) launchMPGame();
   });
 }
 
-function mpIsMyTurn() {
-  if (MP.mode !== 'multi') return true;
-  // Find whose turn it is by humanTurnIdx
-  const humansByNum = G.countries
-    .filter(c => c.humanUid)
-    .sort((a,b)=>(a.playerNum||0)-(b.playerNum||0));
-  const active = humansByNum[G.humanTurnIdx||0];
-  return active && active.humanUid === MP.myUid;
-}
-// Watch for remote state updates (non-host players)
-function switchScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+function buildMPCountryGrid(){
+  const grid=document.getElementById('mpCountryGrid');
+  grid.innerHTML='';
+  CD.forEach(c=>{
+    const el=document.createElement('div');
+    el.className='cc';el.dataset.cid=c.id;
+    el.innerHTML=
+      `<div class="cc-flag">${c.flag}</div>`+
+      `<div class="cc-name">${c.name}</div>`+
+      ['R','S','H','A','E'].map(k=>
+        `<div class="sb-row"><span class="sb-lbl">${SI[k].icon}</span>`+
+        `<div class="sb"><div class="sb-fill" style="width:${c[k]/12*100}%;background:${SI[k].col}"></div></div>`+
+        `<span class="sb-val" style="color:${SI[k].col}">${c[k]}</span></div>`
+      ).join('');
+    el.addEventListener('click',()=>{
+      if(el.classList.contains('taken')) return;
+      mpSelCountryId=c.id;
+      MP.roomRef.child('players/'+MP.myUid+'/countryId').set(c.id);
+    });
+    grid.appendChild(el);
+  });
 }
 
-function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length-1; i>0; i--) {
-    const j = Math.floor(Math.random()*(i+1));
-    [a[i],a[j]] = [a[j],a[i]];
+function updateMPCountryGrid(){
+  const taken=new Set(Object.entries(MP.lobbyPlayers).filter(([uid,p])=>p.countryId&&uid!==MP.myUid).map(([,p])=>p.countryId));
+  const mine=MP.lobbyPlayers[MP.myUid]?.countryId;
+  document.querySelectorAll('#mpCountryGrid .cc').forEach(el=>{
+    const cid=el.dataset.cid;
+    el.classList.toggle('taken',taken.has(cid));
+    el.classList.toggle('mine-sel',cid===mine);
+    el.classList.remove('sel');
+  });
+}
+
+function renderMPPlayerList(){
+  const list=document.getElementById('mpPlayerList');
+  list.innerHTML='';
+  const hostUid=MP.lobbyPlayers?Object.keys(MP.lobbyPlayers)[0]:MP.myUid; // first joiner = host
+  Object.entries(MP.lobbyPlayers).forEach(([uid,p],i)=>{
+    const div=document.createElement('div');
+    div.className='mp-player-row'+(uid===MP.myUid?' me':'')+(i===0?' host-badge':'');
+    const ctry=p.countryId?CD.find(c=>c.id===p.countryId):null;
+    div.innerHTML=
+      `<div class="mp-player-name">Игрок ${i+1}: ${p.name}</div>`+
+      `<div class="mp-player-country">${ctry?ctry.flag+' '+ctry.name:'не выбрана'}</div>`;
+    list.appendChild(div);
+  });
+  const n=Object.keys(MP.lobbyPlayers).length;
+  document.getElementById('mpRoomSub').textContent=`${n} игрок${n===1?'':n<5?'а':'ов'} в комнате`;
+}
+
+function checkHostCanStart(){
+  if(!MP.isHost) return;
+  const all=Object.values(MP.lobbyPlayers);
+  const allChose=all.length>0&&all.every(p=>p.countryId);
+  const btn=document.getElementById('btnStartMP');
+  const msg=document.getElementById('mpWaitMsg');
+  if(allChose){btn.classList.remove('hidden');msg.style.display='none';}
+  else{btn.classList.add('hidden');msg.style.display='block';}
+}
+
+document.getElementById('btnStartMP').addEventListener('click',()=>{
+  if(!MP.isHost) return;
+  // Build countries array: human players first in join order, then AI
+  const playerEntries=Object.entries(MP.lobbyPlayers);
+  const humanCountries=playerEntries.map(([uid,p],i)=>{
+    const data=CD.find(c=>c.id===p.countryId);
+    const c=mkCountry(data,uid,i);
+    return c;
+  });
+  const takenIds=new Set(playerEntries.map(([,p])=>p.countryId));
+  const aiPool=shuffle(CD.filter(c=>!takenIds.has(c.id)));
+  const aiCountries=aiPool.slice(0,6-humanCountries.length).map((data,i)=>mkCountry(data,null,humanCountries.length+i));
+  const countries=[...humanCountries,...aiCountries];
+  const turnOrder=playerEntries.map(([uid])=>uid);
+
+  G={
+    round:1,phase:'event',
+    countries,
+    deck:shuffle([...Array(32)].map((_,i)=>i)),
+    deckPos:0,
+    curEventId:null,olympicsPeace:false,
+    devDone:false,actDone:false,
+    initStats:countries.map(c=>({R:c.R,S:c.S,H:c.H,A:c.A,E:c.E})),
+    // MP fields
+    hostUid:MP.myUid,
+    turnOrder,
+    currentTurnUid:turnOrder[0],
+  };
+  // Push state, then mark started
+  pushState();
+  MP.roomRef.child('started').set(true);
+});
+
+function launchMPGame(){
+  MP.roomRef.child('players').off(); // stop lobby listener
+  show('game');
+  watchState();
+  // Host will also see the gameState update and render
+}
+
+/* ════════════════════════════════════════════════════
+   SP LOBBY
+════════════════════════════════════════════════════ */
+let selId=null;
+let spBuilt=false;
+
+function buildSPLobby(){
+  if(spBuilt) return;
+  spBuilt=true;
+  const grid=document.getElementById('countryGrid');
+  CD.forEach(c=>{
+    const el=document.createElement('div');
+    el.className='cc';
+    el.innerHTML=
+      `<div class="cc-flag">${c.flag}</div>`+
+      `<div class="cc-name">${c.name}</div>`+
+      ['R','S','H','A','E'].map(k=>
+        `<div class="sb-row"><span class="sb-lbl">${SI[k].icon}</span>`+
+        `<div class="sb"><div class="sb-fill" style="width:${c[k]/12*100}%;background:${SI[k].col}"></div></div>`+
+        `<span class="sb-val" style="color:${SI[k].col}">${c[k]}</span></div>`
+      ).join('');
+    el.addEventListener('click',()=>{
+      document.querySelectorAll('#countryGrid .cc').forEach(e=>e.classList.remove('sel'));
+      el.classList.add('sel');selId=c.id;
+      document.getElementById('startBtn').disabled=false;
+    });
+    grid.appendChild(el);
+  });
+  document.getElementById('startBtn').addEventListener('click',startSPGame);
+}
+
+function startSPGame(){
+  if(!selId) return;
+  const pData=CD.find(c=>c.id===selId);
+  const aiData=shuffle(CD.filter(c=>c.id!==selId)).slice(0,5);
+  G={
+    round:1,phase:'event',
+    countries:[mkCountry(pData,null,0),...aiData.map((d,i)=>mkCountry(d,null,i+1))],
+    deck:shuffle([...Array(32)].map((_,i)=>i)),deckPos:0,
+    curEventId:null,olympicsPeace:false,
+    devDone:false,actDone:false,
+    initStats:null,
+    hostUid:null,turnOrder:null,currentTurnUid:null,
+  };
+  G.initStats=G.countries.map(c=>({R:c.R,S:c.S,H:c.H,A:c.A,E:c.E}));
+  show('game');
+  renderAll();
+  addLog('── Раунд 1 ──','round');
+  drawEvent();
+}
+
+/* ════════════════════════════════════════════════════
+   RENDER
+════════════════════════════════════════════════════ */
+function renderAll(){
+  renderPlayer();
+  renderAI();
+  document.getElementById('roundTag').textContent=`Раунд ${G.round} / 10`;
+}
+
+function renderPlayer(){
+  const mi=getMyIdx();
+  const p=G.countries[mi];
+  if(!p) return;
+  document.getElementById('playerCard').innerHTML=
+    `<div class="ch"><span class="ch-flag">${p.flag}</span>`+
+    `<div><div class="ch-name">${p.name}</div>`+
+    (MP.enabled&&p.humanUid?`<div style="font-size:.7rem;color:var(--textd)">${MP.lobbyPlayers[p.humanUid]?.name||''}</div>`:'')
+    +`</div></div>`+
+    `<div class="stats-block">`+
+    ['R','S','H','A','E'].map(k=>
+      `<div class="si"><span class="si-icon">${SI[k].icon}</span>`+
+      `<span class="si-name">${SI[k].name}</span>`+
+      `<span class="si-num" id="ps_${k}">${p[k]}</span>`+
+      `<div class="si-bar"><div class="si-fill" id="pb_${k}" style="width:${p[k]/12*100}%;background:${SI[k].col}"></div></div></div>`
+    ).join('')+`</div>`;
+}
+
+function renderAI(){
+  const mi=getMyIdx();
+  const cont=document.getElementById('aiCards');
+  cont.innerHTML='';
+  G.countries.forEach((c,i)=>{
+    if(i===mi) return;
+    const d=document.createElement('div');
+    d.className='ai-mini'+(c.humanUid?' human-p':'');
+    const isCurrent=MP.enabled&&G.currentTurnUid===c.humanUid;
+    d.innerHTML=
+      `<span class="ai-mini-flag">${c.flag}</span>`+
+      `<span class="ai-mini-name">${c.name}`+
+      (c.humanUid?` <span style="font-size:.68rem;color:var(--textd)">(${MP.lobbyPlayers[c.humanUid]?.name||'игрок'})</span>`:'')
+      +`</span>`+
+      (isCurrent?`<span class="ai-mini-turn">◀ ход</span>`:'');
+    cont.appendChild(d);
+  });
+}
+
+function renderEventCardFromState(){
+  if(!G.curEventId) return;
+  const ev=EVENTS.find(e=>e.id===G.curEventId);
+  if(!ev) return;
+  const mi=getMyIdx();
+  const p=G.countries[mi];
+  let optHtml='';
+  if(ev.optional&&!G.devDone&&amIActive()){
+    optHtml=`<button class="ecard-opt-btn" id="optBtn">${ev.optLabel}</button>`;
+  } else if(ev.optional&&G.devDone){
+    optHtml=`<button class="ecard-opt-btn" disabled>Реформа проведена</button>`;
   }
-  return a;
+  document.getElementById('eventCard').innerHTML=
+    `<div class="ecard">`+
+      `<div class="ecard-num">Событие № ${ev.id}</div>`+
+      `<div class="ecard-name">${ev.name}</div>`+
+      `<div class="ecard-desc">${ev.desc}</div>`+
+      `<div class="ecard-fx">${ev.fx}</div>`+
+      optHtml+
+    `</div>`;
+  if(ev.optional&&!G.devDone&&amIActive()){
+    document.getElementById('optBtn')?.addEventListener('click',()=>{
+      if(!amIActive()||G.devDone) return;
+      if(p.E<1){addLog('[Реформа] Недостаточно экономики','');return;}
+      ev.optApply(p);
+      G.devDone=true;
+      addLog(`[${p.name}] Провели школьную реформу: Наука+2, Экономика−1`,'dev');
+      renderPlayer();
+      if(MP.enabled) pushState();
+      syncUI();
+      renderEventCardFromState();
+    });
+  }
 }
 
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-</script>
+const PHASE_LABELS={event:'Фаза события',player:'Ваш ход',ai:'Ход противников',nextRound:'Следующий раунд',end:'Игра завершена'};
 
+function syncUI(){
+  const ph=G.phase;
+  const mi=getMyIdx();
+  const p=G.countries[mi]||{E:0,A:0};
+  const active=amIActive();
+  const isPlayer=ph==='player';
+
+  // Phase label
+  let phLabel=PHASE_LABELS[ph]||'';
+  if(MP.enabled&&isPlayer){
+    if(active) phLabel='Ваш ход';
+    else{
+      const curC=G.countries.find(c=>c.humanUid===G.currentTurnUid);
+      const curName=curC?`${curC.flag} ${MP.lobbyPlayers[G.currentTurnUid]?.name||curC.name}`:'';
+      phLabel=`Ход: ${curName}`;
+    }
+  }
+  document.getElementById('phaseTag').textContent=phLabel;
+  document.getElementById('peaceTag').style.display=G.olympicsPeace?'inline-block':'none';
+
+  const canAct=isPlayer&&active;
+  document.getElementById('btnImp').disabled=!canAct||G.devDone||p.E<1;
+  document.getElementById('btnExp').disabled=!canAct||G.devDone;
+  document.getElementById('btnWar').disabled=!canAct||G.actDone||G.olympicsPeace||p.A<5||p.E<4;
+  document.getElementById('btnProj').disabled=!canAct||G.actDone;
+  document.getElementById('btnEnd').disabled=!canAct;
+  const showNR=ph==='nextRound'&&(!MP.enabled||MP.isHost);
+  document.getElementById('btnNR').style.display=showNR?'':'none';
+
+  const msg=document.getElementById('phaseMsg');
+  if(ph==='event') msg.textContent='';
+  else if(ph==='player'){
+    if(!active){
+      const curC=G.countries.find(c=>c.humanUid===G.currentTurnUid);
+      const nm=curC?`${curC.flag} ${MP.lobbyPlayers[G.currentTurnUid]?.name||curC.name}`:'';
+      msg.textContent=`Ожидание хода: ${nm}…`;
+    } else {
+      const parts=[];
+      if(!G.devDone) parts.push('торговля');
+      if(!G.actDone) parts.push('война или проект');
+      msg.textContent=parts.length?'Доступно: '+parts.join('; ')+'.':'Можно завершить ход.';
+    }
+  }
+  else if(ph==='ai') msg.textContent=MP.enabled&&!MP.isHost?'Противники делают ходы…':'Противники делают ходы…';
+  else if(ph==='nextRound') msg.textContent=MP.isHost||!MP.enabled?'Раунд завершён.':'Ожидание хоста…';
+}
+
+/* ════════════════════════════════════════════════════
+   LOG
+════════════════════════════════════════════════════ */
+function addLog(msg,type=''){
+  const log=document.getElementById('eventLog');
+  const d=document.createElement('div');
+  d.className='log-e'+(type?' lg-'+type:'');
+  d.textContent=msg;
+  log.appendChild(d);
+  log.scrollTop=log.scrollHeight;
+}
+
+/* ════════════════════════════════════════════════════
+   DRAW EVENT
+════════════════════════════════════════════════════ */
+function drawEvent(){
+  if(G.deckPos>=G.deck.length){G.deck=shuffle([...Array(32)].map((_,i)=>i));G.deckPos=0;}
+  const ev=EVENTS[G.deck[G.deckPos++]];
+  G.curEventId=ev.id;
+  G.olympicsPeace=!!ev.olympicsPeace;
+
+  // Apply to all
+  G.countries.forEach(c=>ev.apply(c));
+
+  // AI takes optional immediately; human players decide on their turn
+  if(ev.optional){
+    G.countries.forEach((c,i)=>{
+      if(!c.humanUid&&ev.aiTake(c)) ev.optApply(c);
+    });
+  }
+
+  addLog(`[Событие] ${ev.name}`,'event');
+  if(ev.olympicsPeace) addLog('☮ Олимпийское перемирие — войны запрещены.','event');
+
+  // Set turn: first in turnOrder (or player 0 for SP)
+  G.phase='player';G.devDone=false;G.actDone=false;
+  if(MP.enabled) G.currentTurnUid=G.turnOrder[0];
+
+  renderPlayer();
+  renderEventCardFromState();
+  syncUI();
+  if(MP.enabled) pushState();
+}
+
+/* ════════════════════════════════════════════════════
+   PLAYER ACTIONS
+════════════════════════════════════════════════════ */
+document.getElementById('btnImp').addEventListener('click',()=>{
+  if(G.devDone||G.phase!=='player'||!amIActive()) return;
+  const mi=getMyIdx(); const p=G.countries[mi];
+  if(p.E<1){addLog('[Торговля] Недостаточно экономики','');return;}
+  openModal('Импорт — Экономика−1 → параметр+1',
+    ['R','S','H','A'].map(k=>({
+      title:`${SI[k].icon} ${SI[k].name}`,
+      desc:`${p[k]} → ${p[k]+1}  ·  Экономика: ${p.E} → ${Math.max(0,p.E-1)}`,
+      action(){
+        const old={...p};p[k]=cl(p[k]+1);p.E=cl(p.E-1);G.devDone=true;
+        addLog(`[${p.name}] Импорт ${SI[k].name}: ${old[k]}→${p[k]} (Э: ${old.E}→${p.E})`,'dev');
+        renderPlayer();if(MP.enabled)pushState();syncUI();
+      }
+    }))
+  );
+});
+
+document.getElementById('btnExp').addEventListener('click',()=>{
+  if(G.devDone||G.phase!=='player'||!amIActive()) return;
+  const mi=getMyIdx(); const p=G.countries[mi];
+  const avail=['R','S','H','A'].filter(k=>p[k]>0);
+  if(!avail.length){addLog('[Торговля] Нет параметров для экспорта','');return;}
+  openModal('Экспорт — параметр−1 → Экономика+1',
+    avail.map(k=>({
+      title:`${SI[k].icon} ${SI[k].name}`,
+      desc:`${p[k]} → ${p[k]-1}  ·  Экономика: ${p.E} → ${cl(p.E+1)}`,
+      action(){
+        const old={...p};p[k]=cl(p[k]-1);p.E=cl(p.E+1);G.devDone=true;
+        addLog(`[${p.name}] Экспорт ${SI[k].name}: ${old[k]}→${p[k]} (Э: ${old.E}→${p.E})`,'dev');
+        renderPlayer();if(MP.enabled)pushState();syncUI();
+      }
+    }))
+  );
+});
+
+document.getElementById('btnWar').addEventListener('click',()=>{
+  if(G.actDone||G.phase!=='player'||G.olympicsPeace||!amIActive()) return;
+  const mi=getMyIdx(); const p=G.countries[mi];
+  if(p.A<5||p.E<4) return;
+  const targets=G.countries.filter((c,i)=>i!==mi&&!isNeutral(c));
+  if(!targets.length){addLog('[Война] Нет доступных целей','');return;}
+  openModal('Выбрать цель атаки',
+    targets.map(c=>({
+      title:`${c.flag} ${c.name}${c.humanUid?' 👤':''}`,
+      desc:'Стоимость: Армия−1, Экономика−1',
+      action(){openWarModal(mi,G.countries.indexOf(c));}
+    }))
+  );
+});
+
+document.getElementById('btnProj').addEventListener('click',()=>{
+  if(G.actDone||G.phase!=='player'||!amIActive()) return;
+  const mi=getMyIdx(); const p=G.countries[mi];
+  const avail=PROJECTS.filter(pr=>!p.projectsBlocked.has(pr.id)&&(!pr.req||pr.req(p)));
+  const blocked=PROJECTS.filter(pr=>p.projectsBlocked.has(pr.id));
+  const locked=PROJECTS.filter(pr=>!p.projectsBlocked.has(pr.id)&&pr.req&&!pr.req(p));
+  const items=[
+    ...avail.map(pr=>({title:pr.name,desc:`Успех: ${pr.sd}  |  Провал: ${pr.fd}  (50/50)`,action(){conductProject(mi,pr.id);}})),
+    ...locked.map(pr=>({title:`🔒 ${pr.name}`,desc:pr.reqTxt,disabled:true,action(){}})),
+    ...blocked.map(pr=>({title:`✗ ${pr.name}`,desc:'Заблокирован',disabled:true,action(){}})),
+  ];
+  if(!items.filter(i=>!i.disabled).length){addLog('[Проект] Нет доступных проектов','');return;}
+  openModal('Запустить смелый проект',items);
+});
+
+document.getElementById('btnEnd').addEventListener('click',()=>{
+  if(G.phase!=='player'||!amIActive()) return;
+  if(!MP.enabled){
+    G.phase='ai'; syncUI(); setTimeout(runAllAI,350);
+    return;
+  }
+  // Multiplayer: advance to next player or AI
+  const idx=G.turnOrder.indexOf(G.currentTurnUid);
+  if(idx<G.turnOrder.length-1){
+    G.currentTurnUid=G.turnOrder[idx+1];
+    G.devDone=false;G.actDone=false;
+    pushState();
+  } else {
+    // Last human done → AI phase
+    G.phase='ai';G.currentTurnUid='ai';
+    pushState();
+    if(MP.isHost) setTimeout(runAllAI,600);
+  }
+  syncUI();
+});
+
+document.getElementById('btnNR').addEventListener('click',nextRound);
+
+/* ════════════════════════════════════════════════════
+   WAR MODAL
+════════════════════════════════════════════════════ */
+function isNeutral(c){return c.id==='swiss'&&c.E>7;}
+
+function openWarModal(attIdx,defIdx){
+  const att=G.countries[attIdx],def=G.countries[defIdx];
+  const potentialAllies=G.countries.map((c,i)=>({c,i})).filter(({c,i})=>i!==attIdx&&i!==defIdx&&!isNeutral(c)&&c.A>0);
+  const asked={};
+
+  function render(){
+    const acc=Object.entries(asked).filter(([,v])=>v).length;
+    const pow=att.A-1+acc;
+    document.getElementById('wm-info').innerHTML=
+      `<div style="display:flex;gap:16px;font-size:.85rem;margin-top:2px">`+
+        `<div style="flex:1;background:var(--card);border-radius:5px;padding:9px">`+
+          `<div style="font-size:.72rem;color:var(--textd);margin-bottom:3px">АТАКУЮЩИЙ</div>`+
+          `<div>${att.flag} <strong style="color:var(--gold)">${att.name}</strong></div>`+
+          `<div style="color:var(--textd);font-size:.76rem;margin-top:2px">A: ${att.A}−1 + ${acc} союзн. = <strong style="color:#e06050">${pow}</strong></div>`+
+        `</div>`+
+        `<div style="flex:1;background:var(--card);border-radius:5px;padding:9px">`+
+          `<div style="font-size:.72rem;color:var(--textd);margin-bottom:3px">ЦЕЛЬ</div>`+
+          `<div>${def.flag} <strong style="color:var(--gold)">${def.name}</strong></div>`+
+          `<div style="color:var(--textd);font-size:.76rem;margin-top:2px">A: ${def.A} + союзники защиты</div>`+
+        `</div></div>`;
+    const alliesDiv=document.getElementById('wm-allies');
+    alliesDiv.innerHTML='';
+    if(!potentialAllies.length){alliesDiv.innerHTML='<div style="font-size:.8rem;color:var(--textd);font-style:italic">Нет кандидатов</div>';}
+    else potentialAllies.forEach(({c,i})=>{
+      const row=document.createElement('div');
+      row.style.cssText='display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--card);border-radius:5px;border:1px solid var(--border)';
+      const st=asked.hasOwnProperty(i);
+      row.innerHTML=
+        `<span style="font-size:1.1rem">${c.flag}</span>`+
+        `<span style="flex:1;font-size:.82rem">${c.name}</span>`+
+        `<span style="font-size:.75rem;color:var(--textd)">⚔${c.A}</span>`+
+        (!st?`<button data-idx="${i}" class="wmb" style="-webkit-appearance:none;appearance:none;padding:4px 11px;font-family:Jost,sans-serif;font-size:.74rem;background:var(--goldbg);border:1px solid var(--goldd);color:var(--gold);border-radius:4px;cursor:pointer">Спросить</button>`
+         :asked[i]?`<span style="color:#5dca8a;font-size:.76rem">✓ Принято</span>`
+                  :`<span style="color:#e06050;font-size:.76rem">✗ Отказано</span>`);
+      alliesDiv.appendChild(row);
+    });
+    alliesDiv.querySelectorAll('.wmb').forEach(btn=>{
+      btn.addEventListener('click',()=>{asked[+btn.dataset.idx]=Math.random()<0.5;render();});
+    });
+    const accNames=Object.entries(asked).filter(([,v])=>v).map(([i])=>`${G.countries[+i].flag}${G.countries[+i].name}`);
+    document.getElementById('wm-tally').innerHTML=`Запрошено: <strong>${Object.keys(asked).length}</strong> · Согласились: <strong style="color:#5dca8a">${accNames.length}</strong>`+(accNames.length?` (${accNames.join(', ')})`:'');
+  }
+
+  render();
+  document.getElementById('warModal').classList.remove('hidden');
+  document.getElementById('wm-attack').onclick=()=>{document.getElementById('warModal').classList.add('hidden');conductWar(attIdx,defIdx,asked);};
+  document.getElementById('wm-cancel-war').onclick=()=>document.getElementById('warModal').classList.add('hidden');
+}
+
+function conductWar(attIdx,defIdx,askedByAtt=null){
+  const att=G.countries[attIdx],def=G.countries[defIdx];
+  if(isNeutral(def)){addLog(`${def.flag} ${def.name} нейтральна`,'war');return;}
+  att.A=cl(att.A-1);att.E=cl(att.E-1);
+  const attAllies=[];
+  if(askedByAtt!==null){
+    Object.entries(askedByAtt).forEach(([i,acc])=>{
+      if(acc){attAllies.push(+i);G.countries[+i].A=cl(G.countries[+i].A-1);addLog(`[Союз] ${G.countries[+i].flag}${G.countries[+i].name} поддерживает атаку`,'war-win');}
+      else addLog(`[Союз] ${G.countries[+i].flag}${G.countries[+i].name} отказал(а)`,'war');
+    });
+  } else {
+    const cands=G.countries.map((_,i)=>i).filter(i=>i!==attIdx&&i!==defIdx&&G.countries[i].A>0);
+    if(cands.length&&Math.random()<0.5){const pick=cands[0|Math.random()*cands.length];if(Math.random()<0.5){attAllies.push(pick);G.countries[pick].A=cl(G.countries[pick].A-1);addLog(`[Союз] ${G.countries[pick].flag}${G.countries[pick].name} поддерживает атаку`,'war-win');}}
+  }
+  const defAllies=[];
+  const attSet=new Set(attAllies);
+  const defCands=G.countries.map((_,i)=>i).filter(i=>i!==attIdx&&i!==defIdx&&!attSet.has(i)&&G.countries[i].A>0);
+  if(defCands.length){const pick=defCands[0|Math.random()*defCands.length];if(Math.random()<0.5){defAllies.push(pick);G.countries[pick].A=cl(G.countries[pick].A-1);addLog(`[Союз] ${G.countries[pick].flag}${G.countries[pick].name} защищает ${def.flag}${def.name}`,'war-draw');}}
+  const ap=att.A+attAllies.length,dp=def.A+defAllies.length;
+  let res,ru;
+  if(ap>dp){att.R=cl(att.R+2);att.H=cl(att.H+1);def.R=cl(def.R-2);def.A=cl(def.A-1);def.H=cl(def.H-1);res='victory';ru='ПОБЕДА';}
+  else if(ap===dp){att.H=cl(att.H-2);def.A=cl(def.A-1);def.H=cl(def.H-1);res='draw';ru='НИЧЬЯ';}
+  else{att.H=cl(att.H-2);def.A=cl(def.A-1);def.H=cl(def.H+1);res='loss';ru='ПОРАЖЕНИЕ';}
+  const lt=res==='victory'?'war-win':res==='draw'?'war-draw':'war';
+  addLog(`[Война] ${att.flag}${att.name}(${ap}) → ${def.flag}${def.name}(${dp}) — ${ru}`,lt);
+  const mi=getMyIdx();
+  if(attIdx===mi){G.actDone=true;renderPlayer();if(MP.enabled)pushState();syncUI();}
+}
+
+function conductProject(cidx,pid){
+  const c=G.countries[cidx];const pr=PROJECTS.find(p=>p.id===pid);if(!pr) return;
+  c.projectsBlocked.add(pid);
+  const win=Math.random()<0.5;
+  if(win){pr.ok(c);addLog(`[Проект] ${c.flag}${c.name}: «${pr.name}» — Успех! (${pr.sd})`,'proj-ok');}
+  else{pr.fail(c);addLog(`[Проект] ${c.flag}${c.name}: «${pr.name}» — Провал. (${pr.fd})`,'proj-fail');}
+  const mi=getMyIdx();
+  if(cidx===mi){G.actDone=true;renderPlayer();if(MP.enabled)pushState();syncUI();}
+}
+
+/* ════════════════════════════════════════════════════
+   AI TURNS
+════════════════════════════════════════════════════ */
+function runAllAI(){
+  // Find AI country indices
+  const aiIndices=G.countries.map((_,i)=>i).filter(i=>!G.countries[i].humanUid);
+  let i=0;
+  function next(){
+    if(i>=aiIndices.length){
+      G.phase='nextRound';
+      if(MP.enabled){G.currentTurnUid='host';pushState();}
+      else syncUI();
+      return;
+    }
+    runAITurn(aiIndices[i++]);
+    setTimeout(next,MP.enabled?100:250);
+  }
+  next();
+}
+
+function runAITurn(idx){
+  const c=G.countries[idx];
+  if(c.E>3){
+    const stats=['R','S','H','A'];let ms=stats[0];
+    stats.forEach(s=>{if(c[s]<c[ms])ms=s;});
+    c[ms]=cl(c[ms]+1);c.E=cl(c.E-1);
+    addLog(`[ИИ] ${c.flag}${c.name} импортирует ${SI[ms].name}`,'dev');
+  }
+  if(!G.olympicsPeace&&Math.random()<0.20&&c.A>=5&&c.E>=4){
+    const targets=G.countries.filter((t,ti)=>ti!==idx&&!isNeutral(t));
+    if(targets.length){const tgt=targets.reduce((a,b)=>a.A<b.A?a:b);conductWar(idx,G.countries.indexOf(tgt));}
+  }
+  if(Math.random()<0.15){
+    const avail=PROJECTS.filter(pr=>!c.projectsBlocked.has(pr.id)&&(!pr.req||pr.req(c)));
+    if(avail.length) conductProject(idx,avail[0|Math.random()*avail.length].id);
+  }
+}
+
+/* ════════════════════════════════════════════════════
+   ROUND / END
+════════════════════════════════════════════════════ */
+function nextRound(){
+  if(G.round>=10){endGame();return;}
+  G.round++;G.phase='event';G.curEventId=null;G.olympicsPeace=false;
+  document.getElementById('eventCard').innerHTML='';
+  renderAll();
+  addLog(`── Раунд ${G.round} ──`,'round');
+  drawEvent();
+}
+
+function endGame(){
+  G.phase='end';
+  const C=G.countries,I=G.initStats;
+  const cats=[
+    {id:'eco',icon:'👑',name:'Золотая Орда',val:(c)=>c.E},
+    {id:'sci',icon:'🎓',name:'Колыбель Возрождения',val:(c)=>c.S},
+    {id:'hap',icon:'🌸',name:'Пресветлейшая Республика',val:(c)=>c.H},
+    {id:'arm',icon:'⚔️',name:'Непобедимая Армада',val:(c)=>c.A},
+    {id:'arc',icon:'🌿',name:'Аркадия',val:(c)=>c.R+c.H},
+    {id:'pro',icon:'🚀',name:'Экономическое чудо',val:(c,i)=>(c.R+c.S+c.H+c.A+c.E)-(I[i].R+I[i].S+I[i].H+I[i].A+I[i].E)},
+  ];
+  const stars=C.map(()=>0);const catW={};
+  cats.forEach(cat=>{
+    const vals=C.map((c,i)=>cat.val(c,i));const mx=Math.max(...vals);
+    const ws=vals.reduce((acc,v,i)=>{if(v===mx)acc.push(i);return acc;},[]);
+    ws.forEach(i=>stars[i]++);catW[cat.id]={ws,mx};
+  });
+  const maxS=Math.max(...stars);
+  const winners=stars.reduce((a,s,i)=>{if(s===maxS)a.push(i);return a;},[]);
+  show('victory');
+  const vel=document.getElementById('victory');
+  vel.innerHTML=
+    `<h1 class="v-title">Игра завершена</h1><div class="gold-line"></div>`+
+    `<div class="v-sub">🌟 Мәңгілік Ел: ${winners.map(i=>`${C[i].flag} ${C[i].name}`).join(', ')} — ${maxS} ⭐</div>`+
+    `<div class="v-cats"><h3>Победители по категориям</h3>`+
+    cats.map(cat=>{const{ws,mx}=catW[cat.id];return `<div class="v-row"><span class="v-cat">${cat.icon} ${cat.name}</span><span class="v-win">${ws.map(i=>`${C[i].flag} ${C[i].name}`).join(', ')} (${mx})</span></div>`;}).join('')+
+    `<div class="v-row"><span class="v-cat">🌟 Мәңгілік Ел</span><span class="v-win">${winners.map(i=>`${C[i].flag} ${C[i].name}`).join(', ')} (${maxS} ⭐)</span></div></div>`+
+    `<div class="v-grid">`+
+    C.map((c,i)=>{
+      const prog=(c.R+c.S+c.H+c.A+c.E)-(I[i].R+I[i].S+I[i].H+I[i].A+I[i].E);
+      const s=stars[i];const iw=s===maxS;
+      return `<div class="v-card ${iw?'vwinner':''}">`+
+        `<div class="ch" style="margin-bottom:8px"><span style="font-size:1.7rem">${c.flag}</span>`+
+        `<div><div class="ch-name">${c.name}</div>${iw?'<div style="font-size:.75rem;color:var(--gold)">🌟 Мәңгілік Ел</div>':''}</div></div>`+
+        `<div class="v-stars">${'⭐'.repeat(s)}<span class="ve">${'☆'.repeat(7-s)}</span></div>`+
+        `<div style="margin-top:8px">`+
+        ['R','S','H','A','E'].map(k=>`<div class="v-stat-row"><span class="v-stat-l">${SI[k].icon} ${SI[k].name}</span><span style="color:${SI[k].col}">${c[k]}</span></div>`).join('')+
+        `<div class="v-stat-row" style="border-top:1px solid var(--border);margin-top:4px;padding-top:4px"><span class="v-stat-l">🚀 Прогресс</span><span style="color:${prog>=0?'var(--green)':'var(--red)'}">${prog>=0?'+':''}${prog}</span></div>`+
+        `</div></div>`;
+    }).join('')+`</div>`+
+    `<button class="play-again" onclick="location.reload()">Играть снова</button>`;
+}
+
+/* ════════════════════════════════════════════════════
+   MODAL
+════════════════════════════════════════════════════ */
+let _items=[];
+function openModal(title,items){
+  _items=items;
+  document.getElementById('mTitle').textContent=title;
+  document.getElementById('mList').innerHTML=items.map((it,i)=>
+    `<div class="m-item${it.disabled?' mdis':''}" data-i="${i}">`+
+      `<div class="m-item-t">${it.title}</div>`+
+      (it.desc?`<div class="m-item-d">${it.desc}</div>`:'')+`</div>`
+  ).join('');
+  document.querySelectorAll('#mList .m-item:not(.mdis)').forEach(el=>{
+    el.addEventListener('click',()=>{closeModal();_items[+el.dataset.i].action();});
+  });
+  document.getElementById('modalOverlay').classList.remove('hidden');
+}
+function closeModal(){document.getElementById('modalOverlay').classList.add('hidden');}
+document.getElementById('mCancel').addEventListener('click',closeModal);
+document.getElementById('modalOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('modalOverlay'))closeModal();});
+
+/* STAT ANIMATIONS */
+const stEl=document.createElement('style');
+stEl.textContent=`@keyframes svUp{0%{color:#5dca8a;transform:scale(1.4)}100%{color:var(--gold);transform:scale(1)}}@keyframes svDn{0%{color:#e06050;transform:scale(1.2)}100%{color:var(--gold);transform:scale(1)}}`;
+document.head.appendChild(stEl);
+</script>
 </body>
 </html>
