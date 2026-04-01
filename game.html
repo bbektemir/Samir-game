@@ -540,6 +540,8 @@ function watchState(){
     renderAll();
     renderEventCardFromState();
     syncUI();
+    // Handle war phase changes
+    if(MP.enabled && G.pendingWar) handleWarPhaseChange(G);
     // Host draws the first event after initial state loads
     if(_firstLoad){
       _firstLoad=false;
@@ -852,8 +854,7 @@ function renderAI(){
       `<span class="ai-mini-name">${c.name}`+
       (c.humanUid?` <span style="font-size:.68rem;color:var(--textd)">(${MP.lobbyPlayers[c.humanUid]?.name||'игрок'})</span>`:'')
       +`</span>`+
-      (isCurrent?`<span class="ai-mini-turn">◀ ход</span>`:'');
-    cont.appendChild(d);
+      (isCurrent?`<span class="ai-mini-turn">◀ ход</span>`:'');    cont.appendChild(d);
   });
 }
 
@@ -1077,86 +1078,411 @@ document.getElementById('btnEnd').addEventListener('click',()=>{
 document.getElementById('btnNR').addEventListener('click',nextRound);
 
 /* ════════════════════════════════════════════════════
-   WAR MODAL
+   AI ALLY LOGIC (shared SP+MP)
+════════════════════════════════════════════════════ */
+function aiDecideAlly(c, threat){
+  if(c.A<2) return false;
+  const cTot=c.R+c.S+c.H+c.A+c.E;
+  const tTot=threat.R+threat.S+threat.H+threat.A+threat.E;
+  return tTot>cTot+2 || threat.A>c.A+2 || Math.random()<0.15;
+}
+function aiAllyHint(c, threat){
+  if(c.A<2) return 'unlikely';
+  const d=(threat.R+threat.S+threat.H+threat.A+threat.E)-(c.R+c.S+c.H+c.A+c.E);
+  if(d>4||threat.A>c.A+3) return 'likely';
+  if(d>0||threat.A>c.A) return 'maybe';
+  return 'unlikely';
+}
+
+/* ════════════════════════════════════════════════════
+   WAR MODAL — Phase 1: Attacker diplomacy
 ════════════════════════════════════════════════════ */
 function isNeutral(c){return c.id==='swiss'&&c.E>7;}
 
-function openWarModal(attIdx,defIdx){
-  const att=G.countries[attIdx],def=G.countries[defIdx];
-  const potentialAllies=G.countries.map((c,i)=>({c,i})).filter(({c,i})=>i!==attIdx&&i!==defIdx&&!isNeutral(c)&&c.A>0);
-  const asked={};
+function openWarModal(attIdx, defIdx){
+  const att=G.countries[attIdx], def=G.countries[defIdx];
+  const potAllies=G.countries.map((c,i)=>({c,i}))
+    .filter(({i})=>i!==attIdx&&i!==defIdx&&!isNeutral(G.countries[i])&&G.countries[i].A>0);
 
-  function render(){
+  const asked={}; // idx → bool
+
+  function renderP1(){
     const acc=Object.entries(asked).filter(([,v])=>v).length;
     const pow=att.A-1+acc;
     document.getElementById('wm-info').innerHTML=
-      `<div style="display:flex;gap:16px;font-size:.85rem;margin-top:2px">`+
+      `<div style="display:flex;gap:12px;font-size:.85rem;margin-top:2px">`+
         `<div style="flex:1;background:var(--card);border-radius:5px;padding:9px">`+
-          `<div style="font-size:.72rem;color:var(--textd);margin-bottom:3px">АТАКУЮЩИЙ</div>`+
+          `<div style="font-size:.7rem;color:var(--textd);margin-bottom:3px;letter-spacing:.08em">ВЫ АТАКУЕТЕ</div>`+
           `<div>${att.flag} <strong style="color:var(--gold)">${att.name}</strong></div>`+
-          `<div style="color:var(--textd);font-size:.76rem;margin-top:2px">A: ${att.A}−1 + ${acc} союзн. = <strong style="color:#e06050">${pow}</strong></div>`+
+          `<div style="color:var(--textd);font-size:.76rem;margin-top:3px">Армия: ваша−1 + ${acc} союзн. = <strong style="color:#e06050">${pow}</strong></div>`+
         `</div>`+
         `<div style="flex:1;background:var(--card);border-radius:5px;padding:9px">`+
-          `<div style="font-size:.72rem;color:var(--textd);margin-bottom:3px">ЦЕЛЬ</div>`+
-          `<div>${def.flag} <strong style="color:var(--gold)">${def.name}</strong></div>`+
-          `<div style="color:var(--textd);font-size:.76rem;margin-top:2px">A: ${def.A} + союзники защиты</div>`+
+          `<div style="font-size:.7rem;color:var(--textd);margin-bottom:3px;letter-spacing:.08em">ЦЕЛЬ</div>`+
+          `<div>${def.flag} <strong style="color:var(--gold)">${def.name}</strong>${def.humanUid?' 👤':''}</div>`+
+          `<div style="color:var(--textd);font-size:.76rem;margin-top:3px">${def.humanUid?'Игрок ответит после вашей атаки':'Ответ после вашего решения'}</div>`+
         `</div></div>`;
-    const alliesDiv=document.getElementById('wm-allies');
-    alliesDiv.innerHTML='';
-    if(!potentialAllies.length){alliesDiv.innerHTML='<div style="font-size:.8rem;color:var(--textd);font-style:italic">Нет кандидатов</div>';}
-    else potentialAllies.forEach(({c,i})=>{
-      const row=document.createElement('div');
-      row.style.cssText='display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--card);border-radius:5px;border:1px solid var(--border)';
-      const st=asked.hasOwnProperty(i);
-      row.innerHTML=
-        `<span style="font-size:1.1rem">${c.flag}</span>`+
-        `<span style="flex:1;font-size:.82rem">${c.name}</span>`+
-        `<span style="font-size:.75rem;color:var(--textd)">⚔${c.A}</span>`+
-        (!st?`<button data-idx="${i}" class="wmb" style="-webkit-appearance:none;appearance:none;padding:4px 11px;font-family:Jost,sans-serif;font-size:.74rem;background:var(--goldbg);border:1px solid var(--goldd);color:var(--gold);border-radius:4px;cursor:pointer">Спросить</button>`
-         :asked[i]?`<span style="color:#5dca8a;font-size:.76rem">✓ Принято</span>`
-                  :`<span style="color:#e06050;font-size:.76rem">✗ Отказано</span>`);
-      alliesDiv.appendChild(row);
-    });
-    alliesDiv.querySelectorAll('.wmb').forEach(btn=>{
-      btn.addEventListener('click',()=>{asked[+btn.dataset.idx]=Math.random()<0.5;render();});
-    });
-    const accNames=Object.entries(asked).filter(([,v])=>v).map(([i])=>`${G.countries[+i].flag}${G.countries[+i].name}`);
-    document.getElementById('wm-tally').innerHTML=`Запрошено: <strong>${Object.keys(asked).length}</strong> · Согласились: <strong style="color:#5dca8a">${accNames.length}</strong>`+(accNames.length?` (${accNames.join(', ')})`:'');
+
+    const ad=document.getElementById('wm-allies');
+    ad.innerHTML='';
+    if(!potAllies.length){
+      ad.innerHTML='<div style="font-size:.8rem;color:var(--textd);font-style:italic;padding:6px 0">Нет стран для запроса</div>';
+    } else {
+      potAllies.forEach(({c,i})=>{
+        const row=document.createElement('div');
+        row.style.cssText='display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--card);border-radius:5px;border:1px solid var(--border)';
+        const st=asked.hasOwnProperty(i);
+        const isHuman=!!c.humanUid;
+        const hint=isHuman?'human':aiAllyHint(c,def);
+        row.innerHTML=
+          `<span style="font-size:1.1rem">${c.flag}</span>`+
+          `<span style="flex:1;font-size:.82rem">${c.name}${isHuman?' 👤':''}</span>`+
+          (isHuman
+            ? `<span style="font-size:.7rem;color:#5ba3d0">◆ запрос отправится</span>`
+            : `<span style="font-size:.7rem;color:${hint==='likely'?'#5dca8a':hint==='maybe'?'#f0c040':'#7a6a4a'}">${hint==='likely'?'▲ вероятно':hint==='maybe'?'◆ возможно':'▼ маловероятно'}</span>`
+          )+
+          (!st
+            ? `<button data-idx="${i}" class="wmb" style="-webkit-appearance:none;appearance:none;padding:4px 11px;font-family:Jost,sans-serif;font-size:.74rem;background:var(--goldbg);border:1px solid var(--goldd);color:var(--gold);border-radius:4px;cursor:pointer">Спросить</button>`
+            : asked[i]
+              ? `<span style="color:#5dca8a;font-size:.76rem">${isHuman?'⏳ ожидание':'✓ Принято'}</span>`
+              : `<span style="color:#e06050;font-size:.76rem">✗ Отказано</span>`);
+        ad.appendChild(row);
+      });
+      ad.querySelectorAll('.wmb').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          const idx=+btn.dataset.idx;
+          const c=G.countries[idx];
+          if(c.humanUid){
+            // Human: mark pending, will resolve via Firebase after attack
+            asked[idx]='pending';
+          } else {
+            asked[idx]=aiDecideAlly(c,def);
+          }
+          renderP1();
+        });
+      });
+    }
+
+    const attNames=Object.entries(asked).filter(([,v])=>v===true).map(([i])=>`${G.countries[+i].flag}${G.countries[+i].name}`);
+    const pendCount=Object.values(asked).filter(v=>v==='pending').length;
+    document.getElementById('wm-tally').innerHTML=
+      `Подтверждено: <strong style="color:#5dca8a">${attNames.length}</strong>`+
+      (attNames.length?` (${attNames.join(', ')})`:'')+(pendCount?` · <span style="color:#f0c040">⏳ ожидание: ${pendCount}</span>`:'');
   }
 
-  render();
+  renderP1();
   document.getElementById('warModal').classList.remove('hidden');
-  document.getElementById('wm-attack').onclick=()=>{document.getElementById('warModal').classList.add('hidden');conductWar(attIdx,defIdx,asked);};
+  document.getElementById('wm-attack').textContent='⚔ Атаковать';
+  document.getElementById('wm-attack').onclick=()=>{
+    document.getElementById('warModal').classList.add('hidden');
+    // Resolve AI asked, collect confirmed + pending human requests
+    const attAlliesConfirmed=Object.entries(asked).filter(([,v])=>v===true).map(([i])=>+i);
+    const humanAllyRequests={}; // uid → {side:'att', status:'pending'}
+    Object.entries(asked).filter(([,v])=>v==='pending').forEach(([i])=>{
+      const uid=G.countries[+i].humanUid;
+      if(uid) humanAllyRequests[uid]={side:'att',idx:+i,status:'pending'};
+    });
+    startWarDiplomacy(attIdx,defIdx,attAlliesConfirmed,humanAllyRequests);
+  };
   document.getElementById('wm-cancel-war').onclick=()=>document.getElementById('warModal').classList.add('hidden');
 }
 
-function conductWar(attIdx,defIdx,askedByAtt=null){
-  const att=G.countries[attIdx],def=G.countries[defIdx];
-  if(isNeutral(def)){addLog(`${def.flag} ${def.name} нейтральна`,'war');return;}
-  att.A=cl(att.A-1);att.E=cl(att.E-1);
-  const attAllies=[];
-  if(askedByAtt!==null){
-    Object.entries(askedByAtt).forEach(([i,acc])=>{
-      if(acc){attAllies.push(+i);G.countries[+i].A=cl(G.countries[+i].A-1);addLog(`[Союз] ${G.countries[+i].flag}${G.countries[+i].name} поддерживает атаку`,'war-win');}
-      else addLog(`[Союз] ${G.countries[+i].flag}${G.countries[+i].name} отказал(а)`,'war');
-    });
+/* ════════════════════════════════════════════════════
+   WAR STATE MACHINE (MP)
+════════════════════════════════════════════════════ */
+// pendingWar in G:
+// { attIdx, defIdx, attAllies:[], defAllies:[], phase:'def_diplomacy'|'resolve',
+//   humanRequests:{uid:{side,idx,status}} }
+
+function startWarDiplomacy(attIdx, defIdx, attAlliesConfirmed, humanAllyRequests){
+  const def=G.countries[defIdx];
+
+  G.pendingWar={
+    attIdx, defIdx,
+    attAllies:attAlliesConfirmed,
+    defAllies:[],
+    phase:'def_diplomacy',
+    humanRequests:humanAllyRequests,
+  };
+
+  if(!MP.enabled){
+    // SP: resolve defender side immediately
+    resolveDefenderDiplomacy();
   } else {
-    const cands=G.countries.map((_,i)=>i).filter(i=>i!==attIdx&&i!==defIdx&&G.countries[i].A>0);
-    if(cands.length&&Math.random()<0.5){const pick=cands[0|Math.random()*cands.length];if(Math.random()<0.5){attAllies.push(pick);G.countries[pick].A=cl(G.countries[pick].A-1);addLog(`[Союз] ${G.countries[pick].flag}${G.countries[pick].name} поддерживает атаку`,'war-win');}}
+    if(def.humanUid){
+      // Human defender: push state, they'll see their modal
+      pushState();
+    } else {
+      // AI defender: auto-resolve defense, then handle human ally requests
+      resolveAIDefenderAllies();
+      if(Object.keys(humanAllyRequests).length===0){
+        resolveCombat();
+      } else {
+        // Send pending human ally requests to all eligible human players
+        G.pendingWar.phase='awaiting_human_allies';
+        pushState();
+      }
+    }
   }
-  const defAllies=[];
-  const attSet=new Set(attAllies);
-  const defCands=G.countries.map((_,i)=>i).filter(i=>i!==attIdx&&i!==defIdx&&!attSet.has(i)&&G.countries[i].A>0);
-  if(defCands.length){const pick=defCands[0|Math.random()*defCands.length];if(Math.random()<0.5){defAllies.push(pick);G.countries[pick].A=cl(G.countries[pick].A-1);addLog(`[Союз] ${G.countries[pick].flag}${G.countries[pick].name} защищает ${def.flag}${def.name}`,'war-draw');}}
-  const ap=att.A+attAllies.length,dp=def.A+defAllies.length;
+}
+
+function resolveDefenderDiplomacy(){
+  // SP or host running AI defender
+  const {attIdx,defIdx}=G.pendingWar;
+  const attSet=new Set(G.pendingWar.attAllies);
+  G.countries.forEach((c,i)=>{
+    if(i===attIdx||i===defIdx||attSet.has(i)||c.A<2) return;
+    if(Math.random()<0.6 && aiDecideAlly(c,G.countries[attIdx])){
+      G.pendingWar.defAllies.push(i);
+    }
+  });
+  resolveCombat();
+}
+
+function resolveAIDefenderAllies(){
+  const {attIdx,defIdx}=G.pendingWar;
+  const attSet=new Set(G.pendingWar.attAllies);
+  G.countries.forEach((c,i)=>{
+    if(i===attIdx||i===defIdx||attSet.has(i)||c.A<2||c.humanUid) return;
+    if(aiDecideAlly(c,G.countries[attIdx])) G.pendingWar.defAllies.push(i);
+  });
+}
+
+function resolveCombat(){
+  const pw=G.pendingWar;
+  if(!pw) return;
+  const att=G.countries[pw.attIdx], def=G.countries[pw.defIdx];
+
+  att.A=cl(att.A-1); att.E=cl(att.E-1);
+  pw.attAllies.forEach(i=>{G.countries[i].A=cl(G.countries[i].A-1);addLog(`[Союз] ${G.countries[i].flag}${G.countries[i].name} поддерживает атаку (Армия−1)`,'war-win');});
+  pw.defAllies.forEach(i=>{G.countries[i].A=cl(G.countries[i].A-1);addLog(`[Союз] ${G.countries[i].flag}${G.countries[i].name} защищает ${def.flag}${def.name} (Армия−1)`,'war-draw');});
+
+  const ap=att.A+pw.attAllies.length, dp=def.A+pw.defAllies.length;
   let res,ru;
   if(ap>dp){att.R=cl(att.R+2);att.H=cl(att.H+1);def.R=cl(def.R-2);def.A=cl(def.A-1);def.H=cl(def.H-1);res='victory';ru='ПОБЕДА';}
   else if(ap===dp){att.H=cl(att.H-2);def.A=cl(def.A-1);def.H=cl(def.H-1);res='draw';ru='НИЧЬЯ';}
   else{att.H=cl(att.H-2);def.A=cl(def.A-1);def.H=cl(def.H+1);res='loss';ru='ПОРАЖЕНИЕ';}
+
   const lt=res==='victory'?'war-win':res==='draw'?'war-draw':'war';
-  addLog(`[Война] ${att.flag}${att.name}(${ap}) → ${def.flag}${def.name}(${dp}) — ${ru}`,lt);
+  const attNote=pw.attAllies.length?` [+${pw.attAllies.length}]`:'';
+  const defNote=pw.defAllies.length?` [+${pw.defAllies.length}]`:'';
+  addLog(`[Война] ${att.flag}${att.name}${attNote} → ${def.flag}${def.name}${defNote} — ${ru}`,lt);
+
+  G.pendingWar=null;
   const mi=getMyIdx();
-  if(attIdx===mi){G.actDone=true;renderPlayer();if(MP.enabled)pushState();syncUI();}
+  if(pw.attIdx===mi){G.actDone=true;}
+  renderPlayer();
+  if(MP.enabled) pushState();
+  syncUI();
+}
+
+/* ════════════════════════════════════════════════════
+   DEFENDER MODAL (shown to human defender)
+════════════════════════════════════════════════════ */
+function openDefenderModal(){
+  const pw=G.pendingWar;
+  if(!pw) return;
+  const att=G.countries[pw.attIdx], def=G.countries[pw.defIdx];
+  const attSet=new Set(pw.attAllies);
+  const potDefAllies=G.countries.map((c,i)=>({c,i}))
+    .filter(({c,i})=>i!==pw.attIdx&&i!==pw.defIdx&&!attSet.has(i)&&!isNeutral(c)&&c.A>0);
+
+  const defAsked={};
+
+  function renderDefModal(){
+    document.getElementById('wm-info').innerHTML=
+      `<div style="display:flex;gap:12px;font-size:.85rem;margin-top:2px">`+
+        `<div style="flex:1;background:rgba(192,57,43,.1);border:1px solid rgba(192,57,43,.3);border-radius:5px;padding:9px">`+
+          `<div style="font-size:.7rem;color:#e06050;margin-bottom:3px;letter-spacing:.08em">⚔ ВАС АТАКУЮТ</div>`+
+          `<div>${att.flag} <strong style="color:var(--gold)">${att.name}</strong></div>`+
+          `<div style="color:var(--textd);font-size:.76rem;margin-top:3px">Союзников: ${pw.attAllies.length}</div>`+
+        `</div>`+
+        `<div style="flex:1;background:var(--card);border-radius:5px;padding:9px">`+
+          `<div style="font-size:.7rem;color:var(--textd);margin-bottom:3px;letter-spacing:.08em">ВЫ ЗАЩИЩАЕТЕСЬ</div>`+
+          `<div>${def.flag} <strong style="color:var(--gold)">${def.name}</strong></div>`+
+          `<div style="color:var(--textd);font-size:.76rem;margin-top:3px">Армия: ваша + ${Object.values(defAsked).filter(v=>v===true).length} союзн.</div>`+
+        `</div></div>`;
+
+    const ad=document.getElementById('wm-allies');
+    ad.innerHTML='';
+    if(!potDefAllies.length){
+      ad.innerHTML='<div style="font-size:.8rem;color:var(--textd);font-style:italic;padding:6px 0">Нет союзников для запроса</div>';
+    } else {
+      potDefAllies.forEach(({c,i})=>{
+        const row=document.createElement('div');
+        row.style.cssText='display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--card);border-radius:5px;border:1px solid var(--border)';
+        const st=defAsked.hasOwnProperty(i);
+        const isHuman=!!c.humanUid;
+        row.innerHTML=
+          `<span style="font-size:1.1rem">${c.flag}</span>`+
+          `<span style="flex:1;font-size:.82rem">${c.name}${isHuman?' 👤':''}</span>`+
+          (!st
+            ? `<button data-idx="${i}" class="wmd" style="-webkit-appearance:none;appearance:none;padding:4px 11px;font-family:Jost,sans-serif;font-size:.74rem;background:rgba(41,128,185,.15);border:1px solid rgba(41,128,185,.45);color:#5ba3d0;border-radius:4px;cursor:pointer">Спросить</button>`
+            : defAsked[i]===true
+              ? `<span style="color:#5dca8a;font-size:.76rem">${isHuman?'⏳ ожидание':'✓ Принято'}</span>`
+              : defAsked[i]==='pending'
+                ? `<span style="color:#f0c040;font-size:.76rem">⏳ ожидание</span>`
+                : `<span style="color:#e06050;font-size:.76rem">✗ Отказано</span>`);
+        ad.appendChild(row);
+      });
+      ad.querySelectorAll('.wmd').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          const idx=+btn.dataset.idx;
+          const c=G.countries[idx];
+          if(c.humanUid){
+            defAsked[idx]='pending';
+            G.pendingWar.humanRequests=G.pendingWar.humanRequests||{};
+            G.pendingWar.humanRequests[c.humanUid]={side:'def',idx,status:'pending'};
+            pushState();
+          } else {
+            defAsked[idx]=aiDecideAlly(c,att);
+            if(defAsked[idx]) G.pendingWar.defAllies.push(idx);
+          }
+          renderDefModal();
+        });
+      });
+    }
+
+    const accDef=Object.entries(defAsked).filter(([,v])=>v===true).map(([i])=>`${G.countries[+i].flag}${G.countries[+i].name}`);
+    document.getElementById('wm-tally').innerHTML=
+      `Союзники защиты: <strong style="color:#5ba3d0">${accDef.length}</strong>`+(accDef.length?` (${accDef.join(', ')})`:'');
+  }
+
+  renderDefModal();
+  document.getElementById('warModal').classList.remove('hidden');
+  document.getElementById('wm-attack').textContent='🛡 Принять бой';
+  document.getElementById('wm-attack').onclick=()=>{
+    document.getElementById('warModal').classList.add('hidden');
+    // Merge confirmed def allies into pendingWar
+    Object.entries(defAsked).forEach(([i,v])=>{if(v===true&&!G.pendingWar.defAllies.includes(+i)) G.pendingWar.defAllies.push(+i);});
+    // Check if there are pending human ally requests
+    const hasPending=G.pendingWar.humanRequests&&Object.values(G.pendingWar.humanRequests).some(r=>r.status==='pending');
+    if(hasPending){
+      G.pendingWar.phase='awaiting_human_allies';
+      pushState();
+    } else {
+      G.pendingWar.phase='resolve';
+      pushState();
+      resolveCombat();
+    }
+  };
+  document.getElementById('wm-cancel-war').style.display='none'; // can't cancel when being attacked
+}
+
+/* ════════════════════════════════════════════════════
+   HUMAN ALLY REQUEST NOTIFICATION
+════════════════════════════════════════════════════ */
+function checkAllyRequest(){
+  if(!MP.enabled||!G.pendingWar) return;
+  const pr=G.pendingWar.humanRequests;
+  if(!pr) return;
+  const myReq=Object.entries(pr).find(([uid,r])=>uid===MP.myUid&&r.status==='pending');
+  if(!myReq) return;
+  const [,req]=myReq;
+  const warSide=req.side==='att'?'атаки':'защиты';
+  const asking=req.side==='att'?G.countries[G.pendingWar.attIdx]:G.countries[G.pendingWar.defIdx];
+  const target=req.side==='att'?G.countries[G.pendingWar.defIdx]:G.countries[G.pendingWar.attIdx];
+
+  // Show a simple accept/decline overlay
+  showAllyRequestOverlay(asking,target,warSide,()=>{
+    // Accept
+    pr[MP.myUid].status='accepted';
+    if(!G.pendingWar.defAllies) G.pendingWar.defAllies=[];
+    if(req.side==='att') G.pendingWar.attAllies.push(req.idx);
+    else G.pendingWar.defAllies.push(req.idx);
+    pushState();
+    resolveIfReady();
+  },()=>{
+    // Decline
+    pr[MP.myUid].status='rejected';
+    pushState();
+    resolveIfReady();
+  });
+}
+
+function resolveIfReady(){
+  if(!G.pendingWar) return;
+  const pr=G.pendingWar.humanRequests||{};
+  const allResolved=Object.values(pr).every(r=>r.status!=='pending');
+  if(!allResolved) return;
+  if(MP.isHost||(G.pendingWar.attIdx===getMyIdx())){
+    G.pendingWar.phase='resolve';
+    resolveCombat();
+  }
+}
+
+function showAllyRequestOverlay(asking, target, warSide, onAccept, onDecline){
+  // Reuse war modal with a custom layout
+  document.getElementById('wm-info').innerHTML=
+    `<div style="text-align:center;padding:8px">`+
+      `<div style="font-size:.75rem;color:var(--textd);margin-bottom:8px;letter-spacing:.08em">ЗАПРОС НА СОЮЗ</div>`+
+      `<div style="font-size:.95rem;margin-bottom:6px">${asking.flag} <strong style="color:var(--gold)">${asking.name}</strong> просит поддержки</div>`+
+      `<div style="font-size:.82rem;color:var(--textd)">против ${target.flag} ${target.name} · вы потеряете Армия−1</div>`+
+    `</div>`;
+  document.getElementById('wm-allies').innerHTML='';
+  document.getElementById('wm-tally').innerHTML='';
+  document.getElementById('wm-attack').textContent='✓ Поддержать';
+  document.getElementById('wm-attack').onclick=()=>{document.getElementById('warModal').classList.add('hidden');onAccept();};
+  document.getElementById('wm-cancel-war').style.display='';
+  document.getElementById('wm-cancel-war').textContent='✗ Отказать';
+  document.getElementById('wm-cancel-war').onclick=()=>{document.getElementById('warModal').classList.add('hidden');onDecline();};
+  document.getElementById('warModal').classList.remove('hidden');
+}
+
+// Hook into watchState to check for ally requests and defender modal
+function handleWarPhaseChange(newG){
+  if(!newG.pendingWar) return;
+  const pw=newG.pendingWar;
+
+  // Defender is human and it's their turn to respond
+  if(pw.phase==='def_diplomacy'&&pw.defIdx!=null){
+    const defC=newG.countries[pw.defIdx];
+    if(defC.humanUid===MP.myUid){
+      setTimeout(openDefenderModal,200);
+      return;
+    }
+  }
+
+  // AI defender phase: host resolves
+  if(pw.phase==='def_diplomacy'&&MP.isHost){
+    const defC=newG.countries[pw.defIdx];
+    if(!defC.humanUid){
+      resolveAIDefenderAllies();
+      const hasPending=Object.values(pw.humanRequests||{}).some(r=>r.status==='pending');
+      if(!hasPending){ G.pendingWar.phase='resolve'; resolveCombat(); }
+      else { G.pendingWar.phase='awaiting_human_allies'; pushState(); }
+      return;
+    }
+  }
+
+  // Check if I have a pending ally request
+  if((pw.phase==='def_diplomacy'||pw.phase==='awaiting_human_allies')){
+    checkAllyRequest();
+  }
+
+  // Resolve if all responses collected
+  if(pw.phase==='awaiting_human_allies'){
+    resolveIfReady();
+  }
+
+  // Host resolves when ready
+  if(pw.phase==='resolve'&&MP.isHost){
+    setTimeout(resolveCombat,100);
+  }
+}
+
+function conductWar(attIdx,defIdx){
+  // SP only — MP uses startWarDiplomacy
+  const att=G.countries[attIdx],def=G.countries[defIdx];
+  if(isNeutral(def)){addLog(`${def.flag} ${def.name} нейтральна`,'war');return;}
+  // Wrap in minimal pendingWar and resolve immediately
+  G.pendingWar={attIdx,defIdx,attAllies:[],defAllies:[],phase:'resolve',humanRequests:{}};
+  // AI defender allies
+  const attSet=new Set();
+  G.countries.forEach((c,i)=>{
+    if(i===attIdx||i===defIdx||c.A<2) return;
+    if(Math.random()<0.5&&aiDecideAlly(c,att)) G.pendingWar.defAllies.push(i);
+  });
+  resolveCombat();
 }
 
 function conductProject(cidx,pid){
@@ -1197,9 +1523,15 @@ function runAITurn(idx){
     c[ms]=cl(c[ms]+1);c.E=cl(c.E-1);
     addLog(`[ИИ] ${c.flag}${c.name} импортирует ${SI[ms].name}`,'dev');
   }
-  if(!G.olympicsPeace&&Math.random()<0.20&&c.A>=5&&c.E>=4){
-    const targets=G.countries.filter((t,ti)=>ti!==idx&&!isNeutral(t));
-    if(targets.length){const tgt=targets.reduce((a,b)=>a.A<b.A?a:b);conductWar(idx,G.countries.indexOf(tgt));}
+  if(!G.olympicsPeace&&c.A>=5&&c.E>=4){
+    const warChance=c.R<4?0.40:0.20;
+    if(Math.random()<warChance){
+      const targets=G.countries.filter((t,ti)=>ti!==idx&&!isNeutral(t));
+      if(targets.length){
+        const tgt=c.R<4?targets.reduce((a,b)=>b.R>a.R?b:a):targets.reduce((a,b)=>b.A<a.A?b:a);
+        conductWar(idx,G.countries.indexOf(tgt));
+      }
+    }
   }
   if(Math.random()<0.15){
     const avail=PROJECTS.filter(pr=>!c.projectsBlocked.has(pr.id)&&(!pr.req||pr.req(c)));
