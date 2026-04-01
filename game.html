@@ -529,6 +529,7 @@ let _prevTurnUid='';
 function watchState(){
   if(_watchingState) return;
   _watchingState=true;
+  let _firstLoad=true;
   MP.roomRef.child('gameState').on('value',snap=>{
     if(!snap.exists()) return;
     const newG=deserializeG(snap.val());
@@ -539,6 +540,13 @@ function watchState(){
     renderAll();
     renderEventCardFromState();
     syncUI();
+    // Host draws the first event after initial state loads
+    if(_firstLoad){
+      _firstLoad=false;
+      if(MP.isHost && G.phase==='event' && !G.curEventId){
+        setTimeout(drawEvent,300);
+      }
+    }
     if(MP.isHost && becameAI){
       setTimeout(runAllAI,600);
     }
@@ -1208,7 +1216,7 @@ function nextRound(){
   document.getElementById('eventCard').innerHTML='';
   renderAll();
   addLog(`── Раунд ${G.round} ──`,'round');
-  drawEvent();
+  drawEvent();  // pushState() is called inside drawEvent for MP
 }
 
 function endGame(){
